@@ -1,248 +1,1095 @@
-/* THE RED DRAGON STREETWEAR — COMPLETE JAVASCRIPT */
-
 document.addEventListener("DOMContentLoaded", () => {
+
   "use strict";
 
-  const $ = id => document.getElementById(id);
-  const on = (el, event, fn) => { if (el) el.addEventListener(event, fn); };
-  const escapeHtml = value => String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  /* =================================
+     HELPERS
+  ================================= */
 
-  const cartButton=$("cartButton"), cartDrawer=$("cartDrawer"), closeCart=$("closeCart"), overlay=$("overlay");
-  const cartItems=$("cartItems"), cartCount=$("cartCount"), cartTotal=$("cartTotal"), checkoutButton=$("checkoutButton");
-  const searchButton=$("searchButton"), searchModal=$("searchModal"), closeSearch=$("closeSearch"), searchForm=$("searchForm"), searchInput=$("searchInput"), searchResult=$("searchResult");
-  const checkoutModal=$("checkoutModal"), closeCheckout=$("closeCheckout"), customerForm=$("customerForm"), customerSubmit=$("customerSubmit"), customerStatus=$("customerStatus");
-  const paymentModal=$("paymentModal"), closePayment=$("closePayment"), paymentAmount=$("paymentAmount"), paymentProductTotal=$("paymentProductTotal"), paymentSuccess=$("paymentSuccess"), paymentStatus=$("paymentStatus");
-  const utrId=$("utrId"), copyUpi=$("copyUpi"), successModal=$("successModal"), closeSuccess=$("closeSuccess"), successContinue=$("successContinue"), newsletterForm=$("newsletterForm");
+  const $ = (id) => document.getElementById(id);
+
+  const on = (element, event, handler) => {
+    if (element) {
+      element.addEventListener(event, handler);
+    }
+  };
+
+  const escapeHtml = (value) => {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
+
+  /* =================================
+     ELEMENTS
+  ================================= */
+
+  const cartButton = $("cartButton");
+  const cartDrawer = $("cartDrawer");
+  const closeCart = $("closeCart");
+  const overlay = $("overlay");
+
+  const cartItems = $("cartItems");
+  const cartCount = $("cartCount");
+  const cartTotal = $("cartTotal");
+  const checkoutButton = $("checkoutButton");
+
+  const searchButton = $("searchButton");
+  const searchModal = $("searchModal");
+  const closeSearch = $("closeSearch");
+  const searchForm = $("searchForm");
+  const searchInput = $("searchInput");
+  const searchResult = $("searchResult");
+
+  const checkoutModal = $("checkoutModal");
+  const closeCheckout = $("closeCheckout");
+  const customerForm = $("customerForm");
+  const customerSubmit = $("customerSubmit");
+  const checkoutMessage = $("checkoutMessage");
+
+  const paymentModal = $("paymentModal");
+  const closePayment = $("closePayment");
+  const paymentAmount = $("paymentAmount");
+  const paymentProductTotal = $("paymentProductTotal");
+  const copyUpi = $("copyUpi");
+
+  const utrId = $("utrId");
+  const paymentSuccess = $("paymentSuccess");
+  const paymentStatus = $("paymentStatus");
+
+  const successModal = $("successModal");
+  const closeSuccess = $("closeSuccess");
+
+  const orderSummary = $("orderSummary");
+  const formPrebookAmount = $("formPrebookAmount");
+
+  const newsletterForm = $("newsletterForm");
+
+
+  /* =================================
+     CART DATA
+  ================================= */
 
   let cart = [];
 
-  function closeAllOverlays(){
-    [searchModal,checkoutModal,paymentModal,successModal].forEach(m=>m && m.classList.remove("open"));
-    cartDrawer && cartDrawer.classList.remove("open");
-    overlay && overlay.classList.remove("active");
-    document.body.classList.remove("no-scroll");
-  }
 
-  function scrollToSection(id){
-    const section=$(id);
-    if(!section)return;
-    section.scrollIntoView({behavior:"smooth",block:"start"});
-    try{history.replaceState(null,"",`#${id}`)}catch(e){}
-  }
+  /* =================================
+     NAVIGATION
+  ================================= */
 
-  document.querySelectorAll('a[href^="#"]').forEach(link=>{
-    on(link,"click",e=>{
-      const id=(link.getAttribute("href")||"").slice(1);
-      if($(id)){e.preventDefault();scrollToSection(id)}
+  document
+    .querySelectorAll('a[href^="#"]')
+    .forEach(link => {
+
+      link.addEventListener("click", event => {
+
+        const href = link.getAttribute("href");
+
+        if (!href || href === "#") {
+          return;
+        }
+
+        const target = document.querySelector(href);
+
+        if (!target) {
+          return;
+        }
+
+        event.preventDefault();
+
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      });
+
     });
-  });
 
-  function updateCart(){
-    if(!cartItems || !cartCount || !cartTotal)return;
-    cartItems.innerHTML="";
-    if(!cart.length){
-      cartItems.innerHTML="<p>Your cart is empty.</p>";
-      cartCount.textContent="";
-      cartTotal.textContent="₹0";
-      checkoutButton && (checkoutButton.disabled=true);
+
+  /* =================================
+     CART TOTAL
+  ================================= */
+
+  function getPrebookTotal() {
+
+    return cart.reduce(
+      (total, item) =>
+        total + Number(item.prebook || 0),
+      0
+    );
+
+  }
+
+
+  /* =================================
+     UPDATE CART
+  ================================= */
+
+  function updateCart() {
+
+    if (!cartItems) {
       return;
     }
-    let total=0;
-    cart.forEach((item,index)=>{
-      total+=Number(item.prebook)||0;
-      const row=document.createElement("div");
-      row.className="cart-product";
-      row.innerHTML=`<div class="cart-product-top">
-        <div><strong>${escapeHtml(item.name)}</strong>
-        <small>Size: ${escapeHtml(item.size)}</small>
-        <small>Actual price: ₹${Number(item.price)||0}</small>
-        <small>Pre-book: ₹${Number(item.prebook)||0}</small></div>
-        <button class="remove-item" type="button" data-index="${index}">REMOVE</button>
-      </div>`;
-      cartItems.appendChild(row);
-    });
-    cartCount.textContent=String(cart.length);
-    cartTotal.textContent=`₹${total}`;
-    checkoutButton && (checkoutButton.disabled=false);
-    cartItems.querySelectorAll(".remove-item").forEach(btn=>{
-      on(btn,"click",()=>{
-        const i=Number(btn.dataset.index);
-        if(Number.isInteger(i)){cart.splice(i,1);updateCart()}
-      });
-    });
-  }
 
-  function openCart(){
-    cartDrawer && cartDrawer.classList.add("open");
-    overlay && overlay.classList.add("active");
-    document.body.classList.add("no-scroll");
-  }
-  function closeCartDrawer(){
-    cartDrawer && cartDrawer.classList.remove("open");
-    overlay && overlay.classList.remove("active");
-    if(!searchModal?.classList.contains("open")&&!checkoutModal?.classList.contains("open")&&!paymentModal?.classList.contains("open")&&!successModal?.classList.contains("open")) document.body.classList.remove("no-scroll");
-  }
+    cartItems.innerHTML = "";
 
-  on(cartButton,"click",openCart);
-  on(closeCart,"click",closeCartDrawer);
-  on(overlay,"click",closeCartDrawer);
+    const total = getPrebookTotal();
 
-  document.querySelectorAll(".product-card").forEach(card=>{
-    const sizes=card.querySelectorAll(".sizes button");
-    sizes.forEach(btn=>on(btn,"click",()=>{
-      sizes.forEach(x=>x.classList.remove("selected"));
-      btn.classList.add("selected");
-    }));
+    if (cart.length === 0) {
 
-    const add=card.querySelector(".add-to-cart");
-    on(add,"click",()=>{
-      const selected=card.querySelector(".sizes button.selected");
-      if(!selected){alert("Please select a size before adding the product to your cart.");return}
-      cart.push({
-        id:card.dataset.productId||"",
-        name:card.dataset.name||"Product",
-        price:Number(card.dataset.price)||399,
-        prebook:Number(card.dataset.prebook)||99,
-        size:selected.dataset.size||""
-      });
-      updateCart();
-      openCart();
-      const old=add.textContent;
-      add.textContent="ADDED ✓";
-      add.disabled=true;
-      setTimeout(()=>{add.textContent=old;add.disabled=false},1000);
-    });
+      cartItems.innerHTML = `
+        <div class="empty-cart">
+          <p>Your cart is empty.</p>
+        </div>
+      `;
 
-    const img=card.querySelector(".product-image"), prev=card.querySelector(".gallery-prev"), next=card.querySelector(".gallery-next"), label=card.querySelector(".image-label");
-    let back=true;
-    function setImage(src,text){
-      if(!src)return;
-      img.style.opacity="0";
-      setTimeout(()=>{img.src=src;img.alt=`${card.dataset.name} ${text.toLowerCase()} view`;label.textContent=text;img.style.opacity="1"},100);
+      if (cartCount) {
+        cartCount.textContent = "";
+      }
+
+      if (cartTotal) {
+        cartTotal.textContent = "₹0";
+      }
+
+      if (checkoutButton) {
+        checkoutButton.disabled = true;
+      }
+
+      return;
     }
-    on(prev,"click",()=>{back=!back;setImage(back?img.dataset.back:img.dataset.front,back?"BACK":"FRONT")});
-    on(next,"click",()=>{back=!back;setImage(back?img.dataset.back:img.dataset.front,back?"BACK":"FRONT")});
-    on(img,"click",()=>{back=!back;setImage(back?img.dataset.back:img.dataset.front,back?"BACK":"FRONT")});
-  });
 
-  on(searchButton,"click",()=>{
-    searchModal?.classList.add("open");document.body.classList.add("no-scroll");setTimeout(()=>searchInput?.focus(),100);
-  });
-  on(closeSearch,"click",()=>{searchModal?.classList.remove("open");document.body.classList.remove("no-scroll")});
-  on(searchModal,"click",e=>{if(e.target===searchModal){searchModal.classList.remove("open");document.body.classList.remove("no-scroll")}});
 
-  on(searchForm,"submit",e=>{
-    e.preventDefault();
-    const q=(searchInput?.value||"").trim().toLowerCase();
-    if(!q){searchResult.textContent="Please enter a product name.";return}
-    const products=[...document.querySelectorAll(".product-card")];
-    const found=products.find(p=>(p.dataset.name||"").toLowerCase().includes(q));
-    if(found){
-      found.scrollIntoView({behavior:"smooth",block:"center"});
-      searchResult.textContent="Product found.";
-      setTimeout(()=>{searchModal.classList.remove("open");document.body.classList.remove("no-scroll")},500);
-    }else searchResult.textContent="No matching product found.";
-  });
+    cart.forEach((item, index) => {
 
-  on(checkoutButton,"click",()=>{
-    if(!cart.length){alert("Your cart is empty. Please add a product first.");return}
-    closeCartDrawer();
-    checkoutModal?.classList.add("open");
-    document.body.classList.add("no-scroll");
-  });
+      const product = document.createElement("div");
 
-  on(closeCheckout,"click",()=>{checkoutModal?.classList.remove("open");document.body.classList.remove("no-scroll")});
+      product.className = "cart-product";
 
-  on(customerForm,"submit",async e=>{
-    e.preventDefault();
-    if(!cart.length){alert("Your cart is empty.");return}
+      product.innerHTML = `
 
-    if(!customerForm.checkValidity()){customerForm.reportValidity();return}
+        <div class="cart-product-top">
 
-    const details=cart.map(item=>`${item.name} | Size: ${item.size} | Actual Price: ₹${item.price} | Pre-book: ₹${item.prebook}`).join("\n");
-    const prebook=cart.reduce((s,i)=>s+(Number(i.prebook)||0),0);
-    const productTotal=cart.reduce((s,i)=>s+(Number(i.price)||0),0);
-    $("orderDetails").value=details;
-    $("prebookAmount").value=`₹${prebook}`;
+          <div>
 
-    customerSubmit.disabled=true;
-    customerSubmit.textContent="SENDING DETAILS...";
-    customerStatus.textContent="";
+            <strong>
+              ${escapeHtml(item.name)}
+            </strong>
 
-    try{
-      const response=await fetch(customerForm.action,{
-        method:"POST",
-        body:new FormData(customerForm),
-        headers:{Accept:"application/json"}
-      });
-      if(!response.ok)throw new Error("Formspree submission failed");
+            <small>
+              Size: ${escapeHtml(item.size)}
+            </small>
 
-      paymentAmount.textContent=`₹${prebook}`;
-      paymentProductTotal.textContent=`₹${productTotal}`;
-      paymentStatus.textContent="Customer details received. Complete the payment, then enter your UTR.";
-      utrId.value="";
-      paymentSuccess.disabled=true;
-      paymentSuccess.textContent="ENTER UTR TO COMPLETE ORDER";
-      checkoutModal.classList.remove("open");
-      paymentModal.classList.add("open");
-      document.body.classList.add("no-scroll");
-    }catch(err){
-      console.error(err);
-      customerStatus.textContent="We could not send your details. Please check your internet connection and try again.";
-    }finally{
-      customerSubmit.disabled=false;
-      customerSubmit.textContent="CONTINUE TO PAYMENT";
+            <small>
+              Pre-book: ₹${Number(item.prebook)}
+            </small>
+
+          </div>
+
+          <button
+            class="remove-item"
+            type="button"
+            data-index="${index}"
+          >
+            REMOVE
+          </button>
+
+        </div>
+
+      `;
+
+      cartItems.appendChild(product);
+
+    });
+
+
+    if (cartCount) {
+      cartCount.textContent = String(cart.length);
     }
-  });
 
-  on(closePayment,"click",()=>{paymentModal?.classList.remove("open");document.body.classList.remove("no-scroll")});
+    if (cartTotal) {
+      cartTotal.textContent = `₹${total}`;
+    }
 
-  on(copyUpi,"click",async()=>{
-    try{
-      await navigator.clipboard.writeText("8919131887@axl");
-      copyUpi.textContent="COPIED ✓";
-      setTimeout(()=>copyUpi.textContent="COPY",1200);
-    }catch(e){alert("UPI ID: 8919131887@axl")}
-  });
+    if (checkoutButton) {
+      checkoutButton.disabled = false;
+    }
 
-  function updateUtrButton(){
-    const valid=(utrId?.value||"").trim().length>0;
-    paymentSuccess.disabled=!valid;
-    paymentSuccess.textContent=valid?"COMPLETE ORDER ✓":"ENTER UTR TO COMPLETE ORDER";
+
+    cartItems
+      .querySelectorAll(".remove-item")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          const index =
+            Number(button.dataset.index);
+
+          if (
+            Number.isInteger(index) &&
+            index >= 0 &&
+            index < cart.length
+          ) {
+
+            cart.splice(index, 1);
+
+            updateCart();
+
+          }
+
+        });
+
+      });
+
   }
-  on(utrId,"input",updateUtrButton);
 
-  on(paymentSuccess,"click",()=>{
-    const utr=(utrId?.value||"").trim();
-    if(!utr){alert("Please enter your UTR / Transaction ID before completing the order.");utrId?.focus();return}
 
-    paymentStatus.textContent="UTR received. Your order has been recorded for manual payment verification.";
-    paymentSuccess.disabled=true;
-    paymentSuccess.textContent="ORDER RECEIVED ✓";
+  /* =================================
+     OPEN CART
+  ================================= */
 
-    setTimeout(()=>{
-      paymentModal.classList.remove("open");
-      successModal.classList.add("open");
-      document.body.classList.add("no-scroll");
-      cart=[];
-      updateCart();
-      utrId.value="";
-      updateUtrButton();
-    },700);
-  });
+  function openCart() {
 
-  function closeSuccessModal(){
-    successModal?.classList.remove("open");
+    if (!cartDrawer) {
+      return;
+    }
+
+    cartDrawer.classList.add("open");
+
+    if (overlay) {
+      overlay.classList.add("active");
+    }
+
+    document.body.classList.add("no-scroll");
+
+  }
+
+
+  /* =================================
+     CLOSE CART
+  ================================= */
+
+  function closeCartDrawer() {
+
+    if (cartDrawer) {
+      cartDrawer.classList.remove("open");
+    }
+
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+
     document.body.classList.remove("no-scroll");
-  }
-  on(closeSuccess,"click",closeSuccessModal);
-  on(successContinue,"click",closeSuccessModal);
 
-  on(newsletterForm,"submit",e=>{
-    e.preventDefault();
-    const input=newsletterForm.querySelector("input");
-    if(input){input.value="";alert("Thanks for subscribing!")}
-  });
+  }
+
+
+  on(
+    cartButton,
+    "click",
+    openCart
+  );
+
+
+  on(
+    closeCart,
+    "click",
+    closeCartDrawer
+  );
+
+
+  on(
+    overlay,
+    "click",
+    closeCartDrawer
+  );
+
+
+  /* =================================
+     SIZE SELECTION
+  ================================= */
+
+  document
+    .querySelectorAll(".product-card")
+    .forEach(card => {
+
+      const buttons =
+        card.querySelectorAll(".sizes button");
+
+      buttons.forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          buttons.forEach(btn => {
+            btn.classList.remove("selected");
+          });
+
+          button.classList.add("selected");
+
+        });
+
+      });
+
+    });
+
+
+  /* =================================
+     ADD TO CART
+  ================================= */
+
+  document
+    .querySelectorAll(".add-to-cart")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        const card =
+          button.closest(".product-card");
+
+        if (!card) {
+          return;
+        }
+
+
+        const selectedSize =
+          card.querySelector(
+            ".sizes button.selected"
+          );
+
+
+        if (!selectedSize) {
+
+          alert(
+            "Please select a size before adding the product to your cart."
+          );
+
+          return;
+
+        }
+
+
+        const item = {
+
+          id:
+            card.dataset.productId,
+
+          name:
+            card.dataset.name,
+
+          price:
+            Number(card.dataset.price),
+
+          prebook:
+            Number(card.dataset.prebook),
+
+          size:
+            selectedSize.dataset.size
+
+        };
+
+
+        cart.push(item);
+
+        updateCart();
+
+        openCart();
+
+
+        const oldText =
+          button.textContent;
+
+        button.textContent =
+          "ADDED ✓";
+
+
+        setTimeout(() => {
+          button.textContent = oldText;
+        }, 1200);
+
+      });
+
+    });
+
+
+  /* =================================
+     PRODUCT IMAGE GALLERY
+  ================================= */
+
+  document
+    .querySelectorAll(".product-card")
+    .forEach(card => {
+
+      const image =
+        card.querySelector(".product-image");
+
+      const previous =
+        card.querySelector(".gallery-prev");
+
+      const next =
+        card.querySelector(".gallery-next");
+
+      const label =
+        card.querySelector(".image-label");
+
+
+      if (
+        !image ||
+        !previous ||
+        !next ||
+        !label
+      ) {
+        return;
+      }
+
+
+      let showingBack = true;
+
+
+      function showImage(
+        source,
+        text,
+        isBack
+      ) {
+
+        if (!source) {
+          return;
+        }
+
+        image.style.opacity = "0";
+
+        setTimeout(() => {
+
+          image.src = source;
+
+          image.alt =
+            `${card.dataset.name} ${text.toLowerCase()} view`;
+
+          label.textContent = text;
+
+          image.style.opacity = "1";
+
+        }, 100);
+
+        showingBack = isBack;
+
+      }
+
+
+      function toggleImage() {
+
+        if (showingBack) {
+
+          showImage(
+            image.dataset.front,
+            "FRONT",
+            false
+          );
+
+        } else {
+
+          showImage(
+            image.dataset.back,
+            "BACK",
+            true
+          );
+
+        }
+
+      }
+
+
+      showImage(
+        image.dataset.back,
+        "BACK",
+        true
+      );
+
+
+      on(
+        previous,
+        "click",
+        toggleImage
+      );
+
+      on(
+        next,
+        "click",
+        toggleImage
+      );
+
+      on(
+        image,
+        "click",
+        toggleImage
+      );
+
+    });
+
+
+  /* =================================
+     SEARCH
+  ================================= */
+
+  on(
+    searchButton,
+    "click",
+    () => {
+
+      if (!searchModal) {
+        return;
+      }
+
+      searchModal.classList.add("open");
+
+      document.body.classList.add("no-scroll");
+
+      setTimeout(() => {
+
+        if (searchInput) {
+          searchInput.focus();
+        }
+
+      }, 100);
+
+    }
+  );
+
+
+  on(
+    closeSearch,
+    "click",
+    () => {
+
+      searchModal.classList.remove("open");
+
+      document.body.classList.remove("no-scroll");
+
+    }
+  );
+
+
+  on(
+    searchModal,
+    "click",
+    event => {
+
+      if (event.target === searchModal) {
+
+        searchModal.classList.remove("open");
+
+        document.body.classList.remove("no-scroll");
+
+      }
+
+    }
+  );
+
+
+  on(
+    searchForm,
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+      const query =
+        searchInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (!query) {
+
+        searchResult.textContent =
+          "Please enter a product name.";
+
+        return;
+
+      }
+
+
+      const products =
+        document.querySelectorAll(".product-card");
+
+
+      let found = false;
+
+
+      products.forEach(product => {
+
+        const name =
+          (
+            product.dataset.name || ""
+          ).toLowerCase();
+
+
+        if (name.includes(query)) {
+
+          found = true;
+
+          product.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+
+        }
+
+      });
+
+
+      if (found) {
+
+        searchResult.textContent =
+          "Product found.";
+
+        setTimeout(() => {
+
+          searchModal.classList.remove("open");
+
+          document.body.classList.remove("no-scroll");
+
+        }, 500);
+
+      } else {
+
+        searchResult.textContent =
+          "No matching product found.";
+
+      }
+
+    }
+  );
+
+
+  /* =================================
+     CHECKOUT
+  ================================= */
+
+  on(
+    checkoutButton,
+    "click",
+    () => {
+
+      if (cart.length === 0) {
+
+        alert(
+          "Your cart is empty. Please add a product first."
+        );
+
+        return;
+
+      }
+
+
+      closeCartDrawer();
+
+
+      if (checkoutModal) {
+
+        checkoutModal.classList.add("open");
+
+        document.body.classList.add("no-scroll");
+
+      }
+
+    }
+  );
+
+
+  /* =================================
+     CLOSE CHECKOUT
+  ================================= */
+
+  on(
+    closeCheckout,
+    "click",
+    () => {
+
+      checkoutModal.classList.remove("open");
+
+      document.body.classList.remove("no-scroll");
+
+    }
+  );
+
+
+  /* =================================
+     CREATE ORDER SUMMARY
+  ================================= */
+
+  function createOrderSummary() {
+
+    return cart
+      .map(item => {
+
+        return (
+          `${item.name} | Size: ${item.size} | ` +
+          `Price: ₹${item.price} | ` +
+          `Pre-book: ₹${item.prebook}`
+        );
+
+      })
+      .join("\n");
+
+  }
+
+
+  /* =================================
+     CUSTOMER FORM
+     
+     Formspree:
+     https://formspree.io/f/xpwzgqvl
+  ================================= */
+
+  on(
+    customerForm,
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      if (cart.length === 0) {
+
+        checkoutMessage.textContent =
+          "Your cart is empty.";
+
+        return;
+
+      }
+
+
+      checkoutMessage.textContent =
+        "Submitting your details...";
+
+
+      if (customerSubmit) {
+        customerSubmit.disabled = true;
+        customerSubmit.textContent =
+          "SUBMITTING...";
+      }
+
+
+      const total =
+        getPrebookTotal();
+
+
+      orderSummary.value =
+        createOrderSummary();
+
+
+      formPrebookAmount.value =
+        `₹${total}`;
+
+
+      const formData =
+        new FormData(customerForm);
+
+
+      try {
+
+        const response =
+          await fetch(
+            customerForm.action,
+            {
+              method: "POST",
+              body: formData,
+              headers: {
+                "Accept":
+                  "application/json"
+              }
+            }
+          );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Form submission failed."
+          );
+
+        }
+
+
+        /* -----------------------------
+           CUSTOMER DETAILS SUCCESS
+        ----------------------------- */
+
+        checkoutModal.classList.remove("open");
+
+
+        paymentAmount.textContent =
+          `₹${total}`;
+
+
+        paymentProductTotal.innerHTML =
+          cart
+            .map(item =>
+              `<div>
+                ${escapeHtml(item.name)}
+                — Size ${escapeHtml(item.size)}
+              </div>`
+            )
+            .join("");
+
+
+        paymentStatus.textContent =
+          "";
+
+
+        utrId.value = "";
+
+
+        paymentSuccess.disabled = true;
+
+
+        paymentModal.classList.add("open");
+
+
+        checkoutMessage.textContent = "";
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        checkoutMessage.textContent =
+          "We could not submit your details. Please check your internet connection and try again.";
+
+      } finally {
+
+        if (customerSubmit) {
+
+          customerSubmit.disabled = false;
+
+          customerSubmit.textContent =
+            "CONTINUE TO PAYMENT — ₹99";
+
+        }
+
+      }
+
+    }
+  );
+
+
+  /* =================================
+     PAYMENT MODAL
+  ================================= */
+
+  on(
+    closePayment,
+    "click",
+    () => {
+
+      paymentModal.classList.remove("open");
+
+      document.body.classList.remove("no-scroll");
+
+    }
+  );
+
+
+  /* =================================
+     COPY UPI
+  ================================= */
+
+  on(
+    copyUpi,
+    "click",
+    async () => {
+
+      const upi =
+        "8919131887@axl";
+
+
+      try {
+
+        await navigator.clipboard.writeText(upi);
+
+        copyUpi.textContent =
+          "COPIED ✓";
+
+
+        setTimeout(() => {
+
+          copyUpi.textContent =
+            "COPY UPI ID";
+
+        }, 1500);
+
+
+      } catch (error) {
+
+        alert(
+          `UPI ID: ${upi}`
+        );
+
+      }
+
+    }
+  );
+
+
+  /* =================================
+     UTR VALIDATION
+     
+     Complete Order stays disabled
+     until UTR is entered.
+  ================================= */
+
+  on(
+    utrId,
+    "input",
+    () => {
+
+      const value =
+        utrId.value.trim();
+
+
+      if (value.length > 0) {
+
+        paymentSuccess.disabled = false;
+
+        paymentStatus.textContent =
+          "UTR entered. You can now complete your order.";
+
+      } else {
+
+        paymentSuccess.disabled = true;
+
+        paymentStatus.textContent =
+          "Please enter the UTR / Transaction ID.";
+
+      }
+
+    }
+  );
+
+
+  /* =================================
+     COMPLETE ORDER
+  ================================= */
+
+  on(
+    paymentSuccess,
+    "click",
+    () => {
+
+      const utr =
+        utrId.value.trim();
+
+
+      if (!utr) {
+
+        paymentSuccess.disabled = true;
+
+        paymentStatus.textContent =
+          "Please enter the UTR / Transaction ID.";
+
+        return;
+
+      }
+
+
+      /*
+        IMPORTANT:
+
+        There is NO second Formspree form here.
+
+        The UTR is simply captured in the
+        browser so the customer cannot reach
+        the completed screen without entering it.
+
+        You can manually verify the UTR and
+        contact the customer using the details
+        received through your first Formspree.
+      */
+
+
+      console.log(
+        "Order UTR:",
+        utr
+      );
+
+
+      paymentModal.classList.remove("open");
+
+
+      successModal.classList.add("open");
+
+
+      cart = [];
+
+
+      updateCart();
+
+
+      document.body.classList.add("no-scroll");
+
+    }
+  );
+
+
+  /* =================================
+     SUCCESS
+  ================================= */
+
+  on(
+    closeSuccess,
+    "click",
+    () => {
+
+      successModal.classList.remove("open");
+
+      document.body.classList.remove("no-scroll");
+
+    }
+  );
+
+
+  /* =================================
+     NEWSLETTER
+  ================================= */
+
+  on(
+    newsletterForm,
+    "submit",
+    event => {
+
+      event.preventDefault();
+
+      const email =
+        newsletterForm
+          .querySelector("input")
+          .value
+          .trim();
+
+
+      if (!email) {
+        return;
+      }
+
+
+      alert(
+        "Thank you for subscribing!"
+      );
+
+
+      newsletterForm.reset();
+
+    }
+  );
+
+
+  /* =================================
+     INITIAL CART
+  ================================= */
 
   updateCart();
+
 });
