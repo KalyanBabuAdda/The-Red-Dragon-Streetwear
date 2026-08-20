@@ -65,6 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const checkoutButton =
     get("checkoutButton");
+   /* Force checkout button to remain visible */
+if (checkoutButton) {
+  checkoutButton.style.display = "flex";
+  checkoutButton.style.visibility = "visible";
+  checkoutButton.style.opacity = "1";
+}
 
 
   const searchButton =
