@@ -1172,18 +1172,74 @@
 
 
     <p
-      class="payment-status"
-      id="paymentStatus"
-    ></p>
+  class="payment-status"
+  id="paymentStatus"
+></p>
 
+<!-- UTR / TRANSACTION ID -->
+<div
+  class="utr-section"
+  id="utrSection"
+  style="
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+  "
+>
+  <label
+    for="utrId"
+    style="
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    "
+  >
+    UTR / TRANSACTION ID
+  </label>
 
-    <button
-      class="payment-success-button"
-      id="paymentSuccess"
-      type="button"
-    >
-      PAYMENT COMPLETED — COMPLETE ORDER
-    </button>
+  <input
+    id="utrId"
+    name="utrId"
+    type="text"
+    placeholder="Enter your UTR / Transaction ID"
+    autocomplete="off"
+    inputmode="text"
+    style="
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 15px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+      color: inherit;
+      border-radius: 8px;
+      outline: none;
+      font-size: 14px;
+    "
+  >
+
+  <p
+    style="
+      margin: 8px 0 0;
+      font-size: 11px;
+      line-height: 1.5;
+      opacity: 0.65;
+    "
+  >
+    Enter the UTR / transaction ID shown after your UPI payment.
+  </p>
+</div>
+
+<button
+  class="payment-success-button"
+  id="paymentSuccess"
+  type="button"
+  disabled
+  style="opacity: 0.5; cursor: not-allowed;"
+>
+  ENTER UTR TO COMPLETE ORDER
+</button>
 
   </div>
 
@@ -1221,7 +1277,7 @@
 
     <p>
       Your pre-booking has been completed.
-      Thank you for supporting The Red Dragon Streetwear.
+      Thank you for Choosing The Red Dragon Streetwear.
     </p>
 
 
