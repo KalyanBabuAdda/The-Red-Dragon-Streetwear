@@ -1111,20 +1111,188 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
+/* =========================================
+   CUSTOMER DETAILS → PAYMENT
+========================================= */
 
-      if (prebookAmountField) {
+on(
+  customerForm,
+  "submit",
+  async event => {
 
-        prebookAmountField.value =
-          `₹${totalPrebook}`;
+    event.preventDefault();
+
+    if (cart.length === 0) {
+      alert(
+        "Your cart is empty."
+      );
+      return;
+    }
+
+    const fullNameElement =
+      get("fullName");
+
+    const emailElement =
+      get("email");
+
+    const phoneElement =
+      get("phone");
+
+    const addressElement =
+      get("address");
+
+    const fullName =
+      fullNameElement
+        ? fullNameElement.value.trim()
+        : "";
+
+    const email =
+      emailElement
+        ? emailElement.value.trim()
+        : "";
+
+    const phone =
+      phoneElement
+        ? phoneElement.value.trim()
+        : "";
+
+    const address =
+      addressElement
+        ? addressElement.value.trim()
+        : "";
+
+
+    /* =====================================
+       VALIDATE CUSTOMER DETAILS
+    ===================================== */
+
+    if (
+      !fullName ||
+      !email ||
+      !phone ||
+      !address
+    ) {
+
+      alert(
+        "Please fill in your full name, email, phone number and complete address."
+      );
+
+      return;
+    }
+
+
+    /* =====================================
+       CALCULATE ORDER
+    ===================================== */
+
+    const orderDetails =
+      cart
+        .map(item =>
+          `${item.name} | Size: ${item.size} | Actual Price: ₹${item.price} | Pre-book: ₹${item.prebook}`
+        )
+        .join("\n");
+
+
+    const totalPrebook =
+      cart.reduce(
+        (sum, item) =>
+          sum +
+          (Number(item.prebook) || 0),
+        0
+      );
+
+
+    const productTotal =
+      cart.reduce(
+        (sum, item) =>
+          sum +
+          (Number(item.price) || 0),
+        0
+      );
+
+
+    /* =====================================
+       FILL HIDDEN FORM FIELDS
+    ===================================== */
+
+    const orderDetailsField =
+      get("orderDetails");
+
+    const prebookAmountField =
+      get("prebookAmount");
+
+
+    if (orderDetailsField) {
+      orderDetailsField.value =
+        orderDetails;
+    }
+
+
+    if (prebookAmountField) {
+      prebookAmountField.value =
+        `₹${totalPrebook}`;
+    }
+
+
+    /* =====================================
+       SHOW SENDING STATUS
+    ===================================== */
+
+    const submitButton =
+      customerForm.querySelector(
+        'button[type="submit"]'
+      );
+
+
+    if (submitButton) {
+
+      submitButton.disabled = true;
+
+      submitButton.textContent =
+        "SENDING DETAILS...";
+    }
+
+
+    /* =====================================
+       SEND CUSTOMER DETAILS TO YOU
+       
+       Payment will NOT open until this
+       submission succeeds.
+    ===================================== */
+
+    try {
+
+      const formData =
+        new FormData(customerForm);
+
+
+      const response =
+        await fetch(
+          customerForm.action,
+          {
+            method: "POST",
+
+            body: formData,
+
+            headers: {
+              Accept:
+                "application/json"
+            }
+          }
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Formspree submission failed."
+        );
 
       }
 
 
       /* =====================================
-         PREPARE PAYMENT SCREEN FIRST
-         
-         This means the customer is never
-         stuck because of Formspree.
+         PREPARE PAYMENT SCREEN
       ===================================== */
 
       if (paymentAmount) {
@@ -1146,7 +1314,38 @@ document.addEventListener("DOMContentLoaded", () => {
       if (paymentStatus) {
 
         paymentStatus.textContent =
-          "";
+          "Customer details received. Please complete your payment and enter your UTR.";
+
+      }
+
+
+      /* =====================================
+         RESET UTR FIELD
+      ===================================== */
+
+      const utrInput =
+        get("utrId");
+
+      if (utrInput) {
+
+        utrInput.value = "";
+
+      }
+
+
+      if (paymentSuccess) {
+
+        paymentSuccess.disabled =
+          true;
+
+        paymentSuccess.textContent =
+          "ENTER UTR TO COMPLETE ORDER";
+
+        paymentSuccess.style.opacity =
+          "0.5";
+
+        paymentSuccess.style.cursor =
+          "not-allowed";
 
       }
 
@@ -1178,69 +1377,35 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
 
-      /* =====================================
-         SUBMIT CUSTOMER DETAILS
-         
-         This runs AFTER payment opens.
-         
-         If Formspree fails, we do NOT send
-         the customer back to checkout.
-      ===================================== */
+    } catch (error) {
 
-      try {
-
-        if (
-          customerForm &&
-          customerForm.action &&
-          customerForm.action.includes(
-            "formspree.io"
-          )
-        ) {
-
-          const formData =
-            new FormData(
-              customerForm
-            );
+      console.error(
+        "Customer details submission failed:",
+        error
+      );
 
 
-          await fetch(
-            customerForm.action,
-            {
-              method: "POST",
-              body: formData,
-              headers: {
-                Accept:
-                  "application/json"
-              }
-            }
-          );
+      alert(
+        "We could not send your details. Please check your internet connection and try again."
+      );
 
-        }
 
-      } catch (error) {
+    } finally {
 
-        /*
-          Do NOT block payment.
+      if (submitButton) {
 
-          Log the error for debugging,
-          but keep the payment screen open.
-        */
+        submitButton.disabled =
+          false;
 
-        console.warn(
-          "Customer details could not be sent to Formspree:",
-          error
-        );
+        submitButton.textContent =
+          "CONTINUE TO PAYMENT";
 
       }
 
     }
-  );
 
-
-  /* =========================================
-     COPY UPI
-  ========================================= */
-
+  }
+);
   on(
     copyUpi,
     "click",
@@ -1281,77 +1446,204 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     PAYMENT COMPLETED
-  ========================================= */
+   UTR VALIDATION
+========================================= */
 
-  on(
-    paymentSuccess,
-    "click",
-    () => {
-
-      if (!paymentSuccess) {
-        return;
-      }
+const utrInput =
+  get("utrId");
 
 
-      if (paymentStatus) {
+on(
+  utrInput,
+  "input",
+  () => {
 
-        paymentStatus.textContent =
-          "Thank you. Your order is being completed...";
+    if (!paymentSuccess) {
+      return;
+    }
 
-      }
 
+    const utr =
+      utrInput
+        ? utrInput.value.trim()
+        : "";
+
+
+    if (utr.length > 0) {
+
+      paymentSuccess.disabled =
+        false;
+
+      paymentSuccess.textContent =
+        "COMPLETE ORDER ✓";
+
+      paymentSuccess.style.opacity =
+        "1";
+
+      paymentSuccess.style.cursor =
+        "pointer";
+
+    } else {
 
       paymentSuccess.disabled =
         true;
 
-
       paymentSuccess.textContent =
-        "ORDER COMPLETED ✓";
+        "ENTER UTR TO COMPLETE ORDER";
 
+      paymentSuccess.style.opacity =
+        "0.5";
 
-      setTimeout(() => {
-
-        if (paymentModal) {
-
-          paymentModal.classList.remove(
-            "open"
-          );
-
-        }
-
-
-        if (successModal) {
-
-          successModal.classList.add(
-            "open"
-          );
-
-        }
-
-
-        cart = [];
-
-        updateCart();
-
-
-        paymentSuccess.disabled =
-          false;
-
-
-        paymentSuccess.textContent =
-          "PAYMENT COMPLETED — COMPLETE ORDER";
-
-
-      }, 900);
+      paymentSuccess.style.cursor =
+        "not-allowed";
 
     }
-  );
+
+  }
+);
 
 
-  /* =========================================
-     CLOSE PAYMENT
-  ========================================= */
+/* =========================================
+   PAYMENT COMPLETED / ORDER COMPLETION
+
+   IMPORTANT:
+   No email is sent here.
+
+   The customer must enter a UTR first.
+   You will manually verify the payment
+   and send the confirmation email.
+========================================= */
+
+on(
+  paymentSuccess,
+  "click",
+  () => {
+
+    if (!paymentSuccess) {
+      return;
+    }
+
+
+    const utr =
+      utrInput
+        ? utrInput.value.trim()
+        : "";
+
+
+    /* =====================================
+       UTR IS REQUIRED
+    ===================================== */
+
+    if (!utr) {
+
+      alert(
+        "Please enter your UTR / Transaction ID before completing the order."
+      );
+
+      if (utrInput) {
+        utrInput.focus();
+      }
+
+      return;
+    }
+
+
+    /* =====================================
+       SHOW UTR IN CONSOLE FOR DEBUGGING
+       (Not shown to the customer)
+    ===================================== */
+
+    console.log(
+      "Customer UTR:",
+      utr
+    );
+
+
+    /* =====================================
+       ORDER CAN NOW BE MARKED AS RECEIVED
+
+       IMPORTANT:
+       This does NOT verify the payment.
+       You must manually check the UTR.
+    ===================================== */
+
+    if (paymentStatus) {
+
+      paymentStatus.textContent =
+        "UTR received. Your order details have been recorded. Payment will be verified manually.";
+
+    }
+
+
+    paymentSuccess.disabled =
+      true;
+
+    paymentSuccess.textContent =
+      "ORDER RECEIVED ✓";
+
+
+    paymentSuccess.style.opacity =
+      "1";
+
+
+    /* =====================================
+       SHOW SUCCESS SCREEN
+    ===================================== */
+
+    setTimeout(() => {
+
+      if (paymentModal) {
+
+        paymentModal.classList.remove(
+          "open"
+        );
+
+      }
+
+
+      if (successModal) {
+
+        successModal.classList.add(
+          "open"
+        );
+
+      }
+
+
+      /*
+        Clear cart only after the UTR has
+        been submitted by the customer.
+      */
+
+      cart = [];
+
+      updateCart();
+
+
+      paymentSuccess.disabled =
+        false;
+
+      paymentSuccess.textContent =
+        "ENTER UTR TO COMPLETE ORDER";
+
+
+      paymentSuccess.style.opacity =
+        "0.5";
+
+      paymentSuccess.style.cursor =
+        "not-allowed";
+
+
+      if (utrInput) {
+
+        utrInput.value = "";
+
+      }
+
+    }, 900);
+
+  }
+);
 
   on(
     closePayment,
