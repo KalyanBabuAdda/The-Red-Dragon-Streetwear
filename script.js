@@ -1452,35 +1452,48 @@ const orderReferenceField =
             ].join("\n");
           }
 
-          const formData =
-            new FormData(
-              customerForm
-            );
+          const formData = new FormData();
 
-          /*
-            This second submission sends the customer's details,
-            order details and UTR to the email configured in the
-            existing Formspree endpoint.
-          */
-          const response =
-            await fetch(
-              customerForm.action,
-              {
-                method: "POST",
-                body: formData,
-                headers: {
-                  Accept:
-                    "application/json"
-                }
-              }
-            );
+formData.append(
+  "name",
+  get("fullName")?.value.trim() || ""
+);
 
-          if (!response.ok) {
-            throw new Error(
-              "Payment verification submission failed."
-            );
-          }
+formData.append(
+  "email",
+  get("email")?.value.trim() || ""
+);
 
+formData.append(
+  "message",
+  `TEST ORDER - UTR: ${utr}`
+);
+
+const response = await fetch(
+  "https://formspree.io/f/xkjwpylo",
+  {
+    method: "POST",
+    body: formData,
+    headers: {
+      Accept: "application/json"
+    }
+  }
+);
+
+const result = await response.json();
+
+console.log(
+  "Formspree response:",
+  result
+);
+
+if (!response.ok) {
+  throw new Error(
+    result.error ||
+    result.errors?.map(e => e.message).join(", ") ||
+    "Formspree submission failed"
+  );
+}
         } else {
 
           throw new Error(
