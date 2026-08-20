@@ -3,19 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>The Red Dragon Streetwear</title>
-  <meta name="description" content="The Red Dragon Streetwear — limited edition streetwear. Pre-book your piece for ₹99.">
+
+  <meta
+    name="description"
+    content="The Red Dragon Streetwear — limited edition streetwear. Pre-book your piece for ₹99."
+  >
+
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
+<!-- ================================
+     HEADER
+================================ -->
+
 <header class="site-header">
+
   <a href="#home" class="brand">
-    <img src="logo.png" alt="The Red Dragon Streetwear" class="brand-logo">
-    <div class="brand-text"><strong>THE RED DRAGON</strong><small>STREETWEAR</small></div>
+    <img
+      src="logo.png"
+      alt="The Red Dragon Streetwear"
+      class="brand-logo"
+    >
+
+    <div class="brand-text">
+      <strong>THE RED DRAGON</strong>
+      <small>STREETWEAR</small>
+    </div>
   </a>
 
-  <nav class="main-nav" aria-label="Main navigation">
+  <nav class="main-nav">
     <a href="#home">HOME</a>
     <a href="#collection">COLLECTION</a>
     <a href="#about">ABOUT</a>
@@ -23,193 +43,998 @@
   </nav>
 
   <div class="header-actions">
-    <button class="minimal-icon" id="searchButton" type="button" aria-label="Search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><line x1="16" y1="16" x2="21" y2="21"></line></svg>
+
+    <button
+      class="minimal-icon"
+      id="searchButton"
+      type="button"
+      aria-label="Search"
+    >
+      <svg viewBox="0 0 24 24">
+        <circle cx="10.8" cy="10.8" r="6.8"></circle>
+        <line x1="16" y1="16" x2="21" y2="21"></line>
+      </svg>
     </button>
-    <button class="minimal-icon cart-button" id="cartButton" type="button" aria-label="Shopping cart">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h2l1.5 10h10L20 8H7"></path><circle cx="9" cy="19" r="1"></circle><circle cx="17" cy="19" r="1"></circle></svg>
-      <span class="cart-count" id="cartCount"></span>
+
+    <button
+      class="minimal-icon"
+      id="cartButton"
+      type="button"
+      aria-label="Cart"
+    >
+      <svg viewBox="0 0 24 24">
+        <path d="M4 5h2l1.5 10h10L20 8H7"></path>
+        <circle cx="9" cy="19" r="1"></circle>
+        <circle cx="17" cy="19" r="1"></circle>
+      </svg>
+
+      <span id="cartCount" class="cart-count"></span>
     </button>
+
   </div>
+
 </header>
 
+
+<!-- ================================
+     MAIN
+================================ -->
+
 <main id="home">
+
+  <!-- HERO -->
+
   <section class="hero">
+
     <div class="hero-content">
-      <p class="eyebrow">LIMITED EDITION STREETWEAR</p>
-      <h1>WEAR THE <span>DRAGON.</span></h1>
+
+      <p class="eyebrow">
+        LIMITED EDITION STREETWEAR
+      </p>
+
+      <h1>
+        WEAR THE
+        <span>DRAGON.</span>
+      </h1>
+
       <div class="red-line"></div>
-      <p class="hero-description">Built for those who don't follow the crowd.<strong>₹99 PRE-BOOKING</strong></p>
+
+      <p class="hero-description">
+        Built for those who don't follow the crowd.
+        <strong>₹99 PRE-BOOKING</strong>
+      </p>
+
       <div class="hero-features">
-        <div class="hero-feature"><span class="feature-icon">✦</span><p><strong>LIMITED DROP</strong><small>EXCLUSIVE DESIGN</small></p></div>
-        <div class="hero-feature"><span class="feature-icon">✓</span><p><strong>PREMIUM QUALITY</strong><small>MADE TO STAND OUT</small></p></div>
-        <div class="hero-feature"><span class="feature-icon">₹</span><p><strong>₹99 PRE-BOOK</strong><small>₹399 TOTAL PRICE</small></p></div>
+
+        <div class="hero-feature">
+          <span class="feature-icon">✦</span>
+          <p>
+            <strong>LIMITED DROP</strong>
+            <small>EXCLUSIVE DESIGN</small>
+          </p>
+        </div>
+
+        <div class="hero-feature">
+          <span class="feature-icon">✓</span>
+          <p>
+            <strong>PREMIUM QUALITY</strong>
+            <small>MADE TO STAND OUT</small>
+          </p>
+        </div>
+
+        <div class="hero-feature">
+          <span class="feature-icon">₹</span>
+          <p>
+            <strong>₹99 PRE-BOOK</strong>
+            <small>₹399 TOTAL PRICE</small>
+          </p>
+        </div>
+
       </div>
-      <a href="#collection" class="primary-button">SHOP THE DROP <span>→</span></a>
+
+      <a href="#collection" class="primary-button">
+        SHOP THE DROP
+        <span>→</span>
+      </a>
+
     </div>
+
     <div class="hero-visual">
-      <div class="dragon-background">龍</div>
-      <div class="hero-shirt"><img src="frontview.png" alt="Red Dragon Streetwear front view"></div>
+
+      <div class="dragon-background">
+        龍
+      </div>
+
+      <div class="hero-shirt">
+        <img
+          src="frontview.png"
+          alt="Red Dragon Streetwear"
+        >
+      </div>
+
     </div>
+
   </section>
+
+
+  <!-- COLLECTION -->
 
   <section class="collection" id="collection">
+
     <div class="section-heading">
-      <div><p class="eyebrow">THE DROP</p><h2>THE COLLECTION</h2></div>
+
+      <div>
+        <p class="eyebrow">THE DROP</p>
+        <h2>THE COLLECTION</h2>
+      </div>
+
       <span class="drop-label">2 DESIGNS</span>
+
     </div>
+
 
     <div class="products">
-      <article class="product-card" data-product-id="classic" data-name="Red Dragon Classic" data-price="399" data-prebook="99">
-        <span class="new-badge">LIMITED DROP</span>
+
+      <!-- PRODUCT 1 -->
+
+      <article
+        class="product-card"
+        data-product-id="classic"
+        data-name="Red Dragon Classic"
+        data-price="399"
+        data-prebook="99"
+      >
+
+        <span class="new-badge">
+          LIMITED DROP
+        </span>
+
         <div class="product-gallery">
-          <button class="gallery-arrow gallery-prev" type="button" aria-label="Previous image">‹</button>
-          <img class="product-image" src="back-view-01.png" data-front="frontview.png" data-back="back-view-01.png" alt="Red Dragon Classic back view">
-          <button class="gallery-arrow gallery-next" type="button" aria-label="Next image">›</button>
-          <div class="image-label">BACK</div>
-        </div>
-        <div class="product-details">
-          <h3>RED DRAGON CLASSIC</h3><p>Signature Red Dragon design</p>
-          <div class="price-row"><span class="price">₹399</span><span class="prebook-price">₹99 PRE-BOOK</span></div>
-          <p class="price-note">Pay ₹99 now to pre-book your piece.</p>
-          <div class="sizes" aria-label="Select size">
-            <button type="button" data-size="M">M</button><button type="button" data-size="L">L</button><button type="button" data-size="XL">XL</button>
+
+          <button
+            class="gallery-arrow gallery-prev"
+            type="button"
+            aria-label="Previous image"
+          >
+            ‹
+          </button>
+
+          <img
+            class="product-image"
+            src="back-view-01.png"
+            data-front="frontview.png"
+            data-back="back-view-01.png"
+            alt="Red Dragon Classic back view"
+          >
+
+          <button
+            class="gallery-arrow gallery-next"
+            type="button"
+            aria-label="Next image"
+          >
+            ›
+          </button>
+
+          <div class="image-label">
+            BACK
           </div>
-          <button class="add-to-cart" type="button">ADD TO CART — ₹99 PRE-BOOK</button>
+
         </div>
+
+
+        <div class="product-details">
+
+          <h3>
+            RED DRAGON CLASSIC
+          </h3>
+
+          <p>
+            Signature Red Dragon design
+          </p>
+
+          <div class="price-row">
+
+            <span class="price">
+              ₹399
+            </span>
+
+            <span class="prebook-price">
+              ₹99 PRE-BOOK
+            </span>
+
+          </div>
+
+          <p class="price-note">
+            Pay ₹99 now to pre-book your piece.
+          </p>
+
+          <div class="sizes">
+
+            <button type="button" data-size="M">M</button>
+            <button type="button" data-size="L">L</button>
+            <button type="button" data-size="XL">XL</button>
+
+          </div>
+
+          <button
+            class="add-to-cart"
+            type="button"
+          >
+            ADD TO CART — ₹99 PRE-BOOK
+          </button>
+
+        </div>
+
       </article>
 
-      <article class="product-card" data-product-id="shadow" data-name="Red Dragon Shadow" data-price="399" data-prebook="99">
-        <span class="new-badge">NEW</span>
+
+      <!-- PRODUCT 2 -->
+
+      <article
+        class="product-card"
+        data-product-id="shadow"
+        data-name="Red Dragon Shadow"
+        data-price="399"
+        data-prebook="99"
+      >
+
+        <span class="new-badge">
+          NEW
+        </span>
+
         <div class="product-gallery">
-          <button class="gallery-arrow gallery-prev" type="button" aria-label="Previous image">‹</button>
-          <img class="product-image" src="back-view-02.png" data-front="frontview.png" data-back="back-view-02.png" alt="Red Dragon Shadow back view">
-          <button class="gallery-arrow gallery-next" type="button" aria-label="Next image">›</button>
-          <div class="image-label">BACK</div>
-        </div>
-        <div class="product-details">
-          <h3>RED DRAGON SHADOW</h3><p>Dark streetwear edition</p>
-          <div class="price-row"><span class="price">₹399</span><span class="prebook-price">₹99 PRE-BOOK</span></div>
-          <p class="price-note">Pay ₹99 now to pre-book your piece.</p>
-          <div class="sizes" aria-label="Select size">
-            <button type="button" data-size="S">S</button><button type="button" data-size="M">M</button><button type="button" data-size="L">L</button><button type="button" data-size="XL">XL</button><button type="button" data-size="XXL">XXL</button>
+
+          <button
+            class="gallery-arrow gallery-prev"
+            type="button"
+            aria-label="Previous image"
+          >
+            ‹
+          </button>
+
+          <img
+            class="product-image"
+            src="back-view-02.png"
+            data-front="frontview.png"
+            data-back="back-view-02.png"
+            alt="Red Dragon Shadow back view"
+          >
+
+          <button
+            class="gallery-arrow gallery-next"
+            type="button"
+            aria-label="Next image"
+          >
+            ›
+          </button>
+
+          <div class="image-label">
+            BACK
           </div>
-          <button class="add-to-cart" type="button">ADD TO CART — ₹99 PRE-BOOK</button>
+
         </div>
+
+
+        <div class="product-details">
+
+          <h3>
+            RED DRAGON SHADOW
+          </h3>
+
+          <p>
+            Dark streetwear edition
+          </p>
+
+          <div class="price-row">
+
+            <span class="price">
+              ₹399
+            </span>
+
+            <span class="prebook-price">
+              ₹99 PRE-BOOK
+            </span>
+
+          </div>
+
+          <p class="price-note">
+            Pay ₹99 now to pre-book your piece.
+          </p>
+
+          <div class="sizes">
+
+            <button type="button" data-size="S">S</button>
+            <button type="button" data-size="M">M</button>
+            <button type="button" data-size="L">L</button>
+            <button type="button" data-size="XL">XL</button>
+            <button type="button" data-size="XXL">XXL</button>
+
+          </div>
+
+          <button
+            class="add-to-cart"
+            type="button"
+          >
+            ADD TO CART — ₹99 PRE-BOOK
+          </button>
+
+        </div>
+
       </article>
+
     </div>
+
   </section>
+
+
+  <!-- ABOUT -->
 
   <section class="about-section" id="about">
+
     <div class="about-content">
-      <p class="eyebrow">THE STORY</p>
-      <h2>BUILT DIFFERENT. <span>WORN BOLD.</span></h2>
-      <p>The Red Dragon Streetwear is created for people who want their clothes to make a statement. Limited designs. Strong identity. No compromise.</p>
+
+      <p class="eyebrow">
+        THE STORY
+      </p>
+
+      <h2>
+        BUILT DIFFERENT.
+        <span>WORN BOLD.</span>
+      </h2>
+
+      <p>
+        The Red Dragon Streetwear is created for people
+        who want their clothes to make a statement.
+        Limited designs. Strong identity. No compromise.
+      </p>
+
     </div>
+
   </section>
+
+
+  <!-- SIZE GUIDE -->
 
   <section class="size-section" id="size-guide">
-    <div class="section-heading"><div><p class="eyebrow">FIND YOUR FIT</p><h2>SIZE GUIDE</h2></div></div>
-    <div class="size-table-wrapper">
-      <table class="size-table">
-        <thead><tr><th>SIZE</th><th>CHEST</th><th>LENGTH</th></tr></thead>
-        <tbody><tr><td>S</td><td>38"</td><td>26"</td></tr><tr><td>M</td><td>40"</td><td>27"</td></tr><tr><td>L</td><td>42"</td><td>28"</td></tr><tr><td>XL</td><td>44"</td><td>29"</td></tr><tr><td>XXL</td><td>46"</td><td>30"</td></tr></tbody>
-      </table>
+
+    <div class="section-heading">
+
+      <div>
+        <p class="eyebrow">
+          FIND YOUR FIT
+        </p>
+
+        <h2>
+          SIZE GUIDE
+        </h2>
+      </div>
+
     </div>
+
+    <div class="size-table-wrapper">
+
+      <table class="size-table">
+
+        <thead>
+          <tr>
+            <th>SIZE</th>
+            <th>CHEST</th>
+            <th>LENGTH</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>S</td>
+            <td>38"</td>
+            <td>26"</td>
+          </tr>
+
+          <tr>
+            <td>M</td>
+            <td>40"</td>
+            <td>27"</td>
+          </tr>
+
+          <tr>
+            <td>L</td>
+            <td>42"</td>
+            <td>28"</td>
+          </tr>
+
+          <tr>
+            <td>XL</td>
+            <td>44"</td>
+            <td>29"</td>
+          </tr>
+
+          <tr>
+            <td>XXL</td>
+            <td>46"</td>
+            <td>30"</td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
   </section>
+
+
+  <!-- BENEFITS -->
 
   <section class="benefits">
-    <div class="benefit"><span class="benefit-icon">✦</span><p><strong>LIMITED EDITION</strong><small>EXCLUSIVE DROP</small></p></div>
-    <div class="benefit"><span class="benefit-icon">✓</span><p><strong>PREMIUM QUALITY</strong><small>BUILT TO LAST</small></p></div>
-    <div class="benefit"><span class="benefit-icon">₹</span><p><strong>₹99 PRE-BOOK</strong><small>SECURE YOURS</small></p></div>
-    <div class="benefit"><span class="benefit-icon">↗</span><p><strong>STREET READY</strong><small>MAKE A STATEMENT</small></p></div>
+
+    <div class="benefit">
+      <span class="benefit-icon">✦</span>
+      <p>
+        <strong>LIMITED EDITION</strong>
+        <small>EXCLUSIVE DROP</small>
+      </p>
+    </div>
+
+    <div class="benefit">
+      <span class="benefit-icon">✓</span>
+      <p>
+        <strong>PREMIUM QUALITY</strong>
+        <small>BUILT TO LAST</small>
+      </p>
+    </div>
+
+    <div class="benefit">
+      <span class="benefit-icon">₹</span>
+      <p>
+        <strong>₹99 PRE-BOOK</strong>
+        <small>SECURE YOURS</small>
+      </p>
+    </div>
+
+    <div class="benefit">
+      <span class="benefit-icon">↗</span>
+      <p>
+        <strong>STREET READY</strong>
+        <small>MAKE A STATEMENT</small>
+      </p>
+    </div>
+
   </section>
+
 </main>
 
+
+<!-- ================================
+     FOOTER
+================================ -->
+
 <footer>
+
   <div class="footer-grid">
-    <div class="footer-brand"><h3>THE RED DRAGON</h3><p>Limited edition streetwear for those who stand out.</p></div>
-    <div class="footer-column"><h4>SHOP</h4><a href="#collection">Collection</a><a href="#size-guide">Size Guide</a></div>
-    <div class="footer-column"><h4>INFO</h4><a href="#about">About</a><a href="#collection">Pre-book</a></div>
-    <div class="newsletter"><h4>STAY IN THE LOOP</h4><p>Get updates about upcoming drops.</p><form id="newsletterForm"><input type="email" placeholder="Your email" aria-label="Your email" required><button type="submit">→</button></form></div>
+
+    <div class="footer-brand">
+
+      <h3>
+        THE RED DRAGON
+      </h3>
+
+      <p>
+        Limited edition streetwear
+        for those who stand out.
+      </p>
+
+    </div>
+
+    <div class="footer-column">
+
+      <h4>SHOP</h4>
+
+      <a href="#collection">
+        Collection
+      </a>
+
+      <a href="#size-guide">
+        Size Guide
+      </a>
+
+    </div>
+
+    <div class="footer-column">
+
+      <h4>INFO</h4>
+
+      <a href="#about">
+        About
+      </a>
+
+      <a href="#collection">
+        Pre-book
+      </a>
+
+    </div>
+
+    <div class="newsletter">
+
+      <h4>
+        STAY IN THE LOOP
+      </h4>
+
+      <p>
+        Get updates about upcoming drops.
+      </p>
+
+      <form id="newsletterForm">
+
+        <input
+          type="email"
+          placeholder="Your email"
+          required
+        >
+
+        <button type="submit">
+          →
+        </button>
+
+      </form>
+
+    </div>
+
   </div>
-  <div class="copyright">© 2026 The Red Dragon Streetwear. All rights reserved.</div>
+
+  <div class="copyright">
+    © 2026 The Red Dragon Streetwear.
+    All rights reserved.
+  </div>
+
 </footer>
 
-<div class="overlay" id="overlay"></div>
 
-<aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart">
-  <div class="cart-header"><div><p class="eyebrow">YOUR ORDER</p><h2>CART</h2></div><button id="closeCart" class="modal-close" type="button" aria-label="Close cart">×</button></div>
-  <div id="cartItems" class="cart-items"></div>
-  <div class="cart-footer"><div class="cart-total-row"><span>PRE-BOOK TOTAL</span><strong id="cartTotal">₹0</strong></div><button id="checkoutButton" class="primary-button full-button" type="button">PROCEED TO CHECKOUT</button></div>
+<!-- ================================
+     OVERLAY
+================================ -->
+
+<div
+  class="overlay"
+  id="overlay"
+></div>
+
+
+<!-- ================================
+     CART DRAWER
+================================ -->
+
+<aside
+  class="cart-drawer"
+  id="cartDrawer"
+>
+
+  <div class="cart-header">
+
+    <div>
+      <p class="eyebrow">
+        YOUR ORDER
+      </p>
+
+      <h2>
+        CART
+      </h2>
+    </div>
+
+    <button
+      class="modal-close"
+      id="closeCart"
+      type="button"
+    >
+      ×
+    </button>
+
+  </div>
+
+
+  <div
+    class="cart-items"
+    id="cartItems"
+  ></div>
+
+
+  <div class="cart-summary">
+
+    <div class="cart-total">
+
+      <span>
+        PRE-BOOK TOTAL
+      </span>
+
+      <strong id="cartTotal">
+        ₹0
+      </strong>
+
+    </div>
+
+    <p class="cart-summary-note">
+      You are paying the ₹99 pre-book amount now.
+      The remaining amount will be payable later.
+    </p>
+
+    <button
+      class="checkout-button"
+      id="checkoutButton"
+      type="button"
+    >
+      CONTINUE TO CHECKOUT
+    </button>
+
+  </div>
+
 </aside>
 
-<div class="modal" id="searchModal" aria-hidden="true">
+
+<!-- ================================
+     SEARCH MODAL
+================================ -->
+
+<div
+  class="modal"
+  id="searchModal"
+>
+
   <div class="modal-panel small-panel">
-    <button id="closeSearch" class="modal-close" type="button">×</button>
-    <p class="eyebrow">FIND A PRODUCT</p><h2>SEARCH</h2>
-    <form id="searchForm"><input id="searchInput" type="search" placeholder="Search product..." autocomplete="off"><button class="primary-button" type="submit">SEARCH</button></form>
-    <p id="searchResult" class="form-message"></p>
-  </div>
-</div>
 
-<div class="modal" id="checkoutModal" aria-hidden="true">
-  <div class="modal-panel">
-    <button id="closeCheckout" class="modal-close" type="button">×</button>
-    <p class="eyebrow">STEP 1</p><h2>DELIVERY DETAILS</h2>
-    <p class="modal-note">Enter your details before proceeding to payment.</p>
-    <form id="customerForm" action="https://formspree.io/f/xpwzgqvl" method="POST">
-      <input type="hidden" id="orderDetails" name="order_details">
-      <input type="hidden" id="prebookAmount" name="prebook_amount">
-      <input type="hidden" name="_subject" value="New Red Dragon Streetwear Order">
-      <label for="fullName">FULL NAME</label>
-      <input id="fullName" name="full_name" type="text" placeholder="Your full name" autocomplete="name" required>
-      <label for="phone">CONTACT NUMBER</label>
-      <input id="phone" name="phone" type="tel" placeholder="Your phone number" autocomplete="tel" inputmode="tel" required>
-      <label for="email">EMAIL ID</label>
-      <input id="email" name="email" type="email" placeholder="Your email address" autocomplete="email" required>
-      <label for="address">COMPLETE ADDRESS</label>
-      <textarea id="address" name="address" rows="4" placeholder="House/flat, street, area, city, state, PIN code" autocomplete="street-address" required></textarea>
-      <button class="primary-button full-button" id="customerSubmit" type="submit">CONTINUE TO PAYMENT</button>
-      <p class="form-message" id="customerStatus"></p>
+    <button
+      class="modal-close"
+      id="closeSearch"
+      type="button"
+    >
+      ×
+    </button>
+
+    <p class="eyebrow">
+      FIND YOUR PRODUCT
+    </p>
+
+    <h2>
+      SEARCH
+    </h2>
+
+    <form id="searchForm">
+
+      <input
+        type="search"
+        id="searchInput"
+        placeholder="Search product..."
+        autocomplete="off"
+      >
+
+      <button
+        class="primary-button full-button"
+        type="submit"
+      >
+        SEARCH
+      </button>
+
     </form>
+
+    <p
+      class="form-message"
+      id="searchResult"
+    ></p>
+
   </div>
+
 </div>
 
-<div class="modal" id="paymentModal" aria-hidden="true">
-  <div class="modal-panel payment-panel">
-    <button id="closePayment" class="modal-close" type="button">×</button>
-    <p class="eyebrow">STEP 2</p><h2>MAKE PAYMENT</h2>
-    <div class="payment-box">
-      <span>PRE-BOOK AMOUNT</span><strong id="paymentAmount">₹99</strong>
-      <span>PRODUCT TOTAL</span><strong id="paymentProductTotal">₹399</strong>
+
+<!-- ================================
+     CHECKOUT / CUSTOMER DETAILS
+================================ -->
+
+<div
+  class="checkout-modal"
+  id="checkoutModal"
+>
+
+  <div class="checkout-box">
+
+    <button
+      class="modal-close"
+      id="closeCheckout"
+      type="button"
+    >
+      ×
+    </button>
+
+    <p class="eyebrow">
+      CHECKOUT
+    </p>
+
+    <h2>
+      CUSTOMER DETAILS
+    </h2>
+
+    <p class="checkout-note">
+      Please enter your details before proceeding
+      to the ₹99 pre-book payment.
+    </p>
+
+
+    <!--
+      IMPORTANT:
+      This is your existing Formspree form.
+    -->
+
+    <form
+      id="customerForm"
+      action="https://formspree.io/f/xpwzgqvl"
+      method="POST"
+    >
+
+      <label for="fullName">
+        FULL NAME *
+      </label>
+
+      <input
+        id="fullName"
+        name="fullName"
+        type="text"
+        autocomplete="name"
+        required
+      >
+
+
+      <label for="contactNumber">
+        CONTACT NUMBER *
+      </label>
+
+      <input
+        id="contactNumber"
+        name="contactNumber"
+        type="tel"
+        inputmode="tel"
+        autocomplete="tel"
+        required
+      >
+
+
+      <label for="email">
+        EMAIL ID *
+      </label>
+
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+      >
+
+
+      <label for="address">
+        COMPLETE ADDRESS *
+      </label>
+
+      <textarea
+        id="address"
+        name="address"
+        rows="4"
+        autocomplete="street-address"
+        required
+      ></textarea>
+
+
+      <input
+        type="hidden"
+        name="orderSummary"
+        id="orderSummary"
+      >
+
+      <input
+        type="hidden"
+        name="prebookAmount"
+        id="formPrebookAmount"
+      >
+
+
+      <p
+        class="form-message"
+        id="checkoutMessage"
+      ></p>
+
+
+      <button
+        class="checkout-button"
+        id="customerSubmit"
+        type="submit"
+      >
+        CONTINUE TO PAYMENT — ₹99
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- ================================
+     PAYMENT MODAL
+================================ -->
+
+<div
+  class="payment-modal"
+  id="paymentModal"
+>
+
+  <div class="payment-box">
+
+    <button
+      class="modal-close"
+      id="closePayment"
+      type="button"
+    >
+      ×
+    </button>
+
+    <p class="eyebrow">
+      PAYMENT
+    </p>
+
+    <h2>
+      COMPLETE ₹99 PRE-BOOK
+    </h2>
+
+    <div class="payment-total">
+
+      <span>
+        PRE-BOOK AMOUNT
+      </span>
+
+      <strong id="paymentAmount">
+        ₹99
+      </strong>
+
     </div>
-    <p class="payment-instruction">Pay the pre-book amount using UPI.</p>
-    <div class="upi-row"><strong>8919131887@axl</strong><button id="copyUpi" type="button">COPY</button></div>
-    <p class="payment-status" id="paymentStatus">Complete the payment, then enter your UTR / Transaction ID below.</p>
+
+
+    <div class="payment-order-summary">
+
+      <p>
+        <strong>ORDER</strong>
+      </p>
+
+      <p id="paymentProductTotal">
+        Your selected products
+      </p>
+
+    </div>
+
+
+    <div class="upi-box">
+
+      <span>
+        PAY USING UPI
+      </span>
+
+      <strong>
+        8919131887@axl
+      </strong>
+
+      <button
+        id="copyUpi"
+        type="button"
+      >
+        COPY UPI ID
+      </button>
+
+    </div>
+
+
+    <div class="payment-instructions">
+
+      <p>
+        1. Open your UPI app.
+      </p>
+
+      <p>
+        2. Send the displayed pre-book amount.
+      </p>
+
+      <p>
+        3. After successful payment, copy the
+        UTR / Transaction ID.
+      </p>
+
+      <p>
+        4. Enter the UTR below.
+      </p>
+
+    </div>
+
 
     <div class="utr-section">
-      <p class="eyebrow">STEP 3</p>
-      <label for="utrId">UTR / TRANSACTION ID</label>
-      <input id="utrId" type="text" placeholder="Enter your UTR / Transaction ID" autocomplete="off" required>
-      <small>After paying, enter the UTR shown by your UPI app.</small>
+
+      <label for="utrId">
+        UTR / TRANSACTION ID *
+      </label>
+
+      <input
+        id="utrId"
+        type="text"
+        placeholder="Enter your UTR / Transaction ID"
+        autocomplete="off"
+      >
+
+      <small>
+        The order can only be completed after
+        entering the transaction ID.
+      </small>
+
+      <p
+        class="payment-status"
+        id="paymentStatus"
+      ></p>
+
+
+      <button
+        class="payment-success-button"
+        id="paymentSuccess"
+        type="button"
+        disabled
+      >
+        COMPLETE ORDER
+      </button>
+
     </div>
 
-    <button class="payment-success-button" id="paymentSuccess" type="button" disabled>ENTER UTR TO COMPLETE ORDER</button>
   </div>
+
 </div>
 
-<div class="modal" id="successModal" aria-hidden="true">
-  <div class="modal-panel success-panel">
-    <button id="closeSuccess" class="modal-close" type="button">×</button>
-    <div class="success-icon">✓</div>
-    <p class="eyebrow">ORDER RECEIVED</p>
-    <h2>THANK YOU.</h2>
-    <p>Your order details and UTR have been received. We will verify the payment manually and contact you using the details you provided.</p>
-    <button id="successContinue" class="primary-button" type="button">BACK TO STORE</button>
+
+<!-- ================================
+     SUCCESS MODAL
+================================ -->
+
+<div
+  class="success-modal"
+  id="successModal"
+>
+
+  <div class="success-box">
+
+    <div class="success-icon">
+      ✓
+    </div>
+
+    <p class="eyebrow">
+      ORDER RECEIVED
+    </p>
+
+    <h2>
+      THANK YOU!
+    </h2>
+
+    <p>
+      Your order has been created successfully.
+    </p>
+
+    <p class="success-small">
+      We have received your order details and
+      transaction reference.
+    </p>
+
+    <button
+      class="primary-button"
+      id="closeSuccess"
+      type="button"
+    >
+      CONTINUE SHOPPING
+    </button>
+
   </div>
+
 </div>
 
-<script src="script.js" defer></script>
+
+<script src="script.js"></script>
+
 </body>
-</html>
+      </html>
