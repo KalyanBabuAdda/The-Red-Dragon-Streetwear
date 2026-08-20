@@ -127,10 +127,14 @@ if (checkoutButton) {
     get("utrTransactionId");
 
   const emailSubject =
-    get("emailSubject");
+  get("emailSubject");
 
-  const orderReferenceField =
-    get("orderReference");
+const replyTo =
+  get("replyTo");
+
+const orderReferenceField =
+  get("orderReference");
+   
   const orderReceipt =
     get("orderReceipt");
   const paymentStatusField =
@@ -1546,63 +1550,366 @@ if (checkoutButton) {
 
     }
   );
+/* =========================================
+   SUBMIT UTR / PAYMENT VERIFICATION
+========================================= */
+
+on(
+  paymentSuccess,
+  "click",
+  async () => {
+
+    if (!paymentSuccess) {
+      return;
+    }
+
+    const utr = utrInput
+      ? utrInput.value.trim()
+      : "";
+
+    /* -----------------------------------------
+       VALIDATE UTR
+    ----------------------------------------- */
+
+    if (!utr) {
+
+      if (paymentStatus) {
+        paymentStatus.textContent =
+          "Please enter your UTR / Transaction ID after completing the payment.";
+      }
+
+      if (utrInput) {
+        utrInput.focus();
+      }
+
+      return;
+    }
+
+    if (!/^[A-Za-z0-9._-]{6,40}$/.test(utr)) {
+
+      if (paymentStatus) {
+        paymentStatus.textContent =
+          "Please enter a valid UTR / Transaction ID.";
+      }
+
+      if (utrInput) {
+        utrInput.focus();
+      }
+
+      return;
+    }
+
+    /* -----------------------------------------
+       PREVENT DOUBLE SUBMISSION
+    ----------------------------------------- */
+
+    paymentSuccess.disabled = true;
+
+    paymentSuccess.textContent =
+      "SUBMITTING...";
+
+    if (paymentStatus) {
+      paymentStatus.textContent =
+        "Submitting your payment reference...";
+    }
+
+    try {
+
+      /* ---------------------------------------
+         CHECK FORMSPREE
+      --------------------------------------- */
+
+      if (
+        !customerForm ||
+        !customerForm.action ||
+        !customerForm.action.includes("formspree.io")
+      ) {
+
+        throw new Error(
+          "Formspree endpoint is missing."
+        );
+
+      }
+
+      /* ---------------------------------------
+         BASIC CUSTOMER DETAILS
+      --------------------------------------- */
+
+      const fullName =
+        get("fullName")?.value.trim() ||
+        "Not provided";
+
+      const email =
+        get("email")?.value.trim() ||
+        "Not provided";
+
+      const phone =
+        get("phone")?.value.trim() ||
+        "Not provided";
+
+      const address =
+        (
+          get("address")?.value.trim() ||
+          "Not provided"
+        ).replace(/\n/g, " | ");
+
+      const reference =
+        orderReferenceField?.value ||
+        "Not provided";
 
 
-  /* =========================================
-     CLOSE PAYMENT
-  ========================================= */
+      /* ---------------------------------------
+         CALCULATE ORDER
+      --------------------------------------- */
 
-  on(
-    closePayment,
-    "click",
-    () => {
+      const productTotal =
+        cart.reduce(
+          (sum, item) =>
+            sum + (Number(item.price) || 0),
+          0
+        );
 
-      if (paymentModal) {
+      const totalPrebook =
+        cart.reduce(
+          (sum, item) =>
+            sum + (Number(item.prebook) || 0),
+          0
+        );
 
-        paymentModal.classList.remove(
-          "open"
+
+      const balanceDue =
+        Math.max(
+          productTotal - totalPrebook,
+          0
+        );
+
+
+      const orderDetails =
+        cart
+          .map(
+            (item, index) =>
+              `${index + 1}. ${item.name} | Size: ${item.size} | Price: ₹${item.price} | Pre-book: ₹${item.prebook}`
+          )
+          .join("\n");
+
+
+      /* ---------------------------------------
+         FILL HIDDEN FIELDS
+      --------------------------------------- */
+
+      if (utrTransactionId) {
+        utrTransactionId.value = utr;
+      }
+
+
+      if (emailSubject) {
+        emailSubject.value =
+          `RED DRAGON STREETWEAR — ORDER ${reference} — UTR ${utr}`;
+      }
+
+
+      if (replyTo && email !== "Not provided") {
+        replyTo.value = email;
+      }
+
+
+      if (paymentStatusField) {
+        paymentStatusField.value =
+          "PENDING — MANUAL PAYMENT VERIFICATION";
+      }
+
+
+      if (productTotalField) {
+        productTotalField.value =
+          `₹${productTotal}`;
+      }
+
+
+      if (prebookTotalField) {
+        prebookTotalField.value =
+          `₹${totalPrebook}`;
+      }
+
+
+      if (verificationNoteField) {
+        verificationNoteField.value =
+          "UTR received. Verify the payment manually in the UPI/bank account before confirming the order.";
+      }
+
+
+      /* ---------------------------------------
+         CREATE CLEAN ORDER RECEIPT
+      --------------------------------------- */
+
+      if (orderReceipt) {
+
+        orderReceipt.value = [
+          "=============================================",
+          "           RED DRAGON STREETWEAR",
+          "                 ORDER RECEIPT",
+          "=============================================",
+          `ORDER REFERENCE : ${reference}`,
+          `ORDER STATUS    : PENDING MANUAL VERIFICATION`,
+          "",
+          "CUSTOMER DETAILS",
+          "---------------------------------------------",
+          `Name            : ${fullName}`,
+          `Email           : ${email}`,
+          `Phone           : ${phone}`,
+          `Delivery Address: ${address}`,
+          "",
+          "ITEMS",
+          "---------------------------------------------",
+          orderDetails,
+          "",
+          "PAYMENT SUMMARY",
+          "---------------------------------------------",
+          `Product Total   : ₹${productTotal}`,
+          `Pre-booking Paid: ₹${totalPrebook}`,
+          `Balance Due     : ₹${balanceDue}`,
+          "",
+          "PAYMENT VERIFICATION",
+          "---------------------------------------------",
+          `UTR / Txn ID    : ${utr}`,
+          "Payment Status  : PENDING — VERIFY MANUALLY",
+          "",
+          "ACTION REQUIRED",
+          "Check the UTR against the payment received before confirming the order.",
+          "============================================="
+        ].join("\n");
+
+      }
+
+
+      /* ---------------------------------------
+         SEND TO FORMSPREE
+      --------------------------------------- */
+
+      const formData =
+        new FormData(customerForm);
+
+
+      const response =
+        await fetch(
+          customerForm.action,
+          {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json"
+            }
+          }
+        );
+
+
+      /* ---------------------------------------
+         CHECK RESPONSE
+      --------------------------------------- */
+
+      if (!response.ok) {
+
+        let errorMessage =
+          `Form submission failed (${response.status}).`;
+
+        try {
+
+          const result =
+            await response.json();
+
+          if (
+            result &&
+            result.errors &&
+            result.errors.length
+          ) {
+
+            errorMessage =
+              result.errors
+                .map(error => error.message)
+                .join(" ");
+
+          }
+
+        } catch {
+          // Response was not JSON.
+        }
+
+        throw new Error(
+          errorMessage
         );
 
       }
 
 
-      document.body.classList.remove(
-        "no-scroll"
+      /* ---------------------------------------
+         SUCCESS
+      --------------------------------------- */
+
+      if (paymentStatus) {
+        paymentStatus.textContent =
+          "UTR submitted successfully. Your order is now pending payment verification.";
+      }
+
+
+      paymentSuccess.textContent =
+        "UTR SUBMITTED ✓";
+
+
+      setTimeout(() => {
+
+        if (paymentModal) {
+          paymentModal.classList.remove(
+            "open"
+          );
+        }
+
+
+        if (successModal) {
+          successModal.classList.add(
+            "open"
+          );
+        }
+
+
+        cart = [];
+
+        updateCart();
+
+
+        paymentSuccess.disabled =
+          false;
+
+        paymentSuccess.textContent =
+          "SUBMIT UTR & PLACE ORDER";
+
+      }, 1000);
+
+    } catch (error) {
+
+      console.error(
+        "UTR submission error:",
+        error
       );
 
-    }
-  );
 
+      if (paymentStatus) {
 
-  /* =========================================
-     SUCCESS
-  ========================================= */
-
-  on(
-    closeSuccess,
-    "click",
-    () => {
-
-      if (successModal) {
-
-        successModal.classList.remove(
-          "open"
-        );
+        paymentStatus.textContent =
+          error.message ||
+          "Unable to submit your UTR. Please try again.";
 
       }
 
 
-      document.body.classList.remove(
-        "no-scroll"
-      );
+      paymentSuccess.disabled =
+        false;
 
-
-      scrollToSection(
-        "collection"
-      );
+      paymentSuccess.textContent =
+        "SUBMIT UTR & PLACE ORDER";
 
     }
-  );
+
+  }
+);
 
 
   /* =========================================
