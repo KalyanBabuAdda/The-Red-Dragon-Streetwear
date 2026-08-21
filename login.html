@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — The Red Dragon Streetwear</title>
+  <meta name="description" content="Login to The Red Dragon Streetwear.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:#050505;position:relative;overflow:hidden}
+    .login-page:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 20%,rgba(150,0,0,.18),transparent 45%),linear-gradient(120deg,rgba(255,0,0,.05),transparent 40%);pointer-events:none}
+    .login-card{position:relative;width:min(440px,100%);padding:42px 34px 34px;background:rgba(10,10,10,.94);border:1px solid rgba(255,255,255,.13);box-shadow:0 25px 80px rgba(0,0,0,.65);border-radius:4px}
+    .login-logo{display:block;width:78px;height:78px;object-fit:contain;margin:0 auto 22px}
+    .login-kicker{text-align:center;color:#aaa;font-size:11px;letter-spacing:4px;margin:0 0 10px}
+    .login-title{text-align:center;color:#fff;font-size:34px;letter-spacing:2px;margin:0;text-transform:uppercase}
+    .login-title span{color:#d71919}
+    .login-subtitle{text-align:center;color:#888;font-size:13px;margin:10px 0 30px}
+    .login-form label{display:block;color:#ddd;font-size:11px;letter-spacing:1.5px;margin:0 0 8px;text-transform:uppercase}
+    .login-form input{width:100%;box-sizing:border-box;background:#111;border:1px solid #333;color:#fff;padding:14px 15px;margin-bottom:18px;border-radius:2px;outline:none;font:inherit}
+    .login-form input:focus{border-color:#d71919;box-shadow:0 0 0 1px #d71919}
+    .login-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-5px 0 22px;color:#777;font-size:12px}
+    .login-row a,.login-footer a{color:#e01b1b;text-decoration:none}
+    .login-button{width:100%;border:1px solid #e01b1b;background:#e01b1b;color:#fff;padding:15px;font-weight:800;letter-spacing:2px;cursor:pointer;border-radius:2px;text-transform:uppercase}
+    .login-button:hover{background:#b91414}
+    .login-message{min-height:18px;text-align:center;font-size:12px;color:#aaa;margin:13px 0 0}
+    .login-footer{text-align:center;color:#777;font-size:12px;margin-top:26px;padding-top:22px;border-top:1px solid #222}
+    .back-store{display:block;text-align:center;margin-top:20px;color:#aaa;text-decoration:none;font-size:11px;letter-spacing:2px}
+    .back-store:hover{color:#fff}
+    .demo-note{margin-top:20px;padding:10px 12px;background:#111;border-left:2px solid #d71919;color:#777;font-size:10px;line-height:1.5}
+  </style>
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card" aria-labelledby="loginTitle">
+      <img src="logo.png?v=20260821" alt="The Red Dragon Streetwear" class="login-logo">
+      <p class="login-kicker">THE RED DRAGON STREETWEAR</p>
+      <h1 id="loginTitle" class="login-title">Welcome <span>Back</span></h1>
+      <p class="login-subtitle">Sign in to manage your orders and account.</p>
+
+      <form class="login-form" id="loginForm">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required minlength="6">
+
+        <div class="login-row">
+          <span>Secure account access</span>
+          <a href="#" id="forgotPassword">Forgot password?</a>
+        </div>
+
+        <button class="login-button" type="submit">Sign In</button>
+        <p class="login-message" id="loginMessage" role="status"></p>
+      </form>
+
+      <div class="login-footer">
+        Don't have an account? <a href="#" id="createAccount">Create one</a>
+      </div>
+      <a class="back-store" href="index.html">← BACK TO STORE</a>
+      <div class="demo-note">This page is the login interface only. For real customer accounts, the form must be connected to an authentication service such as Firebase or Supabase. Do not store passwords in localStorage or in website JavaScript.</div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const message = document.getElementById('loginMessage');
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      message.textContent = 'Login authentication is not connected yet.';
+    });
+    document.getElementById('forgotPassword').addEventListener('click', (e) => {
+      e.preventDefault();
+      message.textContent = 'Password reset will be available after authentication is connected.';
+    });
+    document.getElementById('createAccount').addEventListener('click', (e) => {
+      e.preventDefault();
+      message.textContent = 'Account registration will be available after authentication is connected.';
+    });
+  </script>
+</body>
+</html>
