@@ -1,44 +1,52 @@
 /* =========================================
    THE RED DRAGON STREETWEAR
    COMPLETE SCRIPT.JS
-   PRODUCT 1 & 2 = ₹99 PRE-BOOK
-   PRODUCT 3 = FULL PRICE + PREPAID / COD
+
+   PRODUCT 1 & 2
+   ₹399 PRODUCT
+   ₹99 PRE-BOOK
+   ₹300 BALANCE
+
+   PRODUCT 3
+   ₹499 FULL PRICE
+   PREPAID = ₹499
+   COD = ₹499 + ₹80 SHIPPING
 ========================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
   "use strict";
+
 
   /* =========================================
      HELPERS
   ========================================= */
 
-  const get = (id) => document.getElementById(id);
+  function get(id) {
+    return document.getElementById(id);
+  }
 
-  const on = (element, event, handler) => {
+  function on(element, event, handler) {
     if (element) {
       element.addEventListener(event, handler);
     }
-  };
+  }
 
-  const escapeHtml = (value) => {
-    return String(value)
+  function escapeHtml(value) {
+    return String(value ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-  };
+  }
 
 
   /* =========================================
-     PRODUCT 3 SHIPPING SETTINGS
-     
-     CHANGE THESE VALUES IF REQUIRED
+     PRODUCT 3 SHIPPING
   ========================================= */
 
   const PRODUCT_3_PREPAID_SHIPPING = 0;
-
   const PRODUCT_3_COD_SHIPPING = 80;
 
 
@@ -50,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cartDrawer = get("cartDrawer");
   const closeCart = get("closeCart");
   const overlay = get("overlay");
+
   const cartItems = get("cartItems");
   const cartCount = get("cartCount");
   const cartTotal = get("cartTotal");
@@ -73,6 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const paymentProductTotal = get("paymentProductTotal");
   const paymentPrebookTotal = get("paymentPrebookTotal");
   const paymentBalance = get("paymentBalance");
+
+  const paymentShippingRow = get("paymentShippingRow");
+  const paymentShipping = get("paymentShipping");
+
+  const paymentPrebookRow = get("paymentPrebookRow");
+  const paymentBalanceRow = get("paymentBalanceRow");
+
+  const paymentMethodSection = get("paymentMethodSection");
 
   const paymentSuccess = get("paymentSuccess");
   const paymentStatus = get("paymentStatus");
@@ -104,64 +121,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let cart = [];
 
-  /*
-    Stores the payment method for Product 3.
-
-    Product 1 & 2 don't need this because
-    they always use the ₹99 pre-book system.
-  */
-
-  let product3PaymentMethod = "prepaid";
-
 
   /* =========================================
      PRODUCT HELPERS
   ========================================= */
 
   function isProduct3(item) {
-    return item.id === "vintage";
+    return String(item.id) === "vintage";
   }
 
 
   function getProductPaymentAmount(item) {
 
-    /*
-      Product 1 & Product 2:
-      Customer pays only ₹99 now.
-    */
-
+    /* Product 1 & 2 = ₹99 pre-book */
     if (!isProduct3(item)) {
+
       return Number(item.prebook) || 99;
+
     }
 
 
-    /*
-      Product 3:
-      Full ₹499 is paid for Prepaid.
-    */
+    /* Product 3 = full payment */
 
-    if (item.paymentMethod === "prepaid") {
-      return (
-        (Number(item.price) || 499) +
-        (Number(item.shipping) || 0)
-      );
-    }
+    const price =
+      Number(item.price) || 499;
 
+    const shipping =
+      getProductShipping(item);
 
-    /*
-      Product 3:
-      COD = full product price + COD shipping.
-    */
-
-    if (item.paymentMethod === "cod") {
-      return (
-        (Number(item.price) || 499) +
-        (Number(item.shipping) || PRODUCT_3_COD_SHIPPING)
-      );
-    }
-
-
-    return Number(item.price) || 499;
+    return price + shipping;
   }
 
 
@@ -171,27 +159,69 @@ document.addEventListener("DOMContentLoaded", () => {
       return 0;
     }
 
+
     if (item.paymentMethod === "cod") {
-      return Number(item.shipping) || PRODUCT_3_COD_SHIPPING;
+      return PRODUCT_3_COD_SHIPPING;
     }
+
 
     return PRODUCT_3_PREPAID_SHIPPING;
   }
 
 
-  /* =========================================
-     CART TOTAL
-  ========================================= */
-
   function calculateCartPaymentTotal() {
 
-    return cart.reduce((total, item) => {
+    return cart.reduce(function (total, item) {
 
-      return total + getProductPaymentAmount(item);
+      return total +
+        getProductPaymentAmount(item);
 
     }, 0);
 
   }
+
+
+  /* =========================================
+     OPEN CART
+  ========================================= */
+
+  function openCart() {
+
+    if (!cartDrawer) {
+      return;
+    }
+
+    cartDrawer.classList.add("open");
+
+    if (overlay) {
+      overlay.classList.add("active");
+    }
+
+    document.body.classList.add("no-scroll");
+  }
+
+
+  /* =========================================
+     CLOSE CART
+  ========================================= */
+
+  function closeCartDrawer() {
+
+    if (cartDrawer) {
+      cartDrawer.classList.remove("open");
+    }
+
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
+
+    document.body.classList.remove("no-scroll");
+  }
+
+
+  on(cartButton, "click", openCart);
+  on(closeCart, "click", closeCartDrawer);
+  on(overlay, "click", closeCartDrawer);
 
 
   /* =========================================
@@ -200,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateCart() {
 
-    if (!cartItems || !cartCount || !cartTotal) {
+    if (!cartItems) {
       return;
     }
 
@@ -213,9 +243,13 @@ document.addEventListener("DOMContentLoaded", () => {
       cartItems.innerHTML =
         "<p>Your cart is empty.</p>";
 
-      cartCount.textContent = "";
+      if (cartCount) {
+        cartCount.textContent = "";
+      }
 
-      cartTotal.textContent = "₹0";
+      if (cartTotal) {
+        cartTotal.textContent = "₹0";
+      }
 
       return;
     }
@@ -224,25 +258,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let total = 0;
 
 
-    cart.forEach((item, index) => {
+    cart.forEach(function (item, index) {
 
-      const paymentAmountForItem =
+      const payNow =
         getProductPaymentAmount(item);
-
 
       const shipping =
         getProductShipping(item);
 
-
-      total += paymentAmountForItem;
-
-
-      const itemElement =
-        document.createElement("div");
-
-
-      itemElement.className =
-        "cart-product";
+      total += payNow;
 
 
       let paymentInfo = "";
@@ -255,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <small>
             Payment:
             ${item.paymentMethod === "cod"
-              ? "COD"
+              ? "COD — CASH ON DELIVERY"
               : "PREPAID"}
           </small>
 
@@ -270,6 +294,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       } else {
 
+        const balance =
+          Math.max(
+            (Number(item.price) || 0) -
+            (Number(item.prebook) || 99),
+            0
+          );
+
+
         paymentInfo = `
 
           <small>
@@ -279,16 +311,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
           <small>
             Balance on delivery:
-            ₹${Math.max(
-              (Number(item.price) || 0) -
-              (Number(item.prebook) || 0),
-              0
-            )}
+            ₹${balance}
           </small>
 
         `;
 
       }
+
+
+      const itemElement =
+        document.createElement("div");
+
+
+      itemElement.className =
+        "cart-product";
 
 
       itemElement.innerHTML = `
@@ -314,10 +350,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <strong>
               Pay Now:
-              ₹${paymentAmountForItem}
+              ₹${payNow}
             </strong>
 
           </div>
+
 
           <button
             class="remove-item"
@@ -337,21 +374,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    cartCount.textContent =
-      cart.length;
+    if (cartCount) {
+      cartCount.textContent =
+        cart.length;
+    }
 
 
-    cartTotal.textContent =
-      `₹${total}`;
+    if (cartTotal) {
+      cartTotal.textContent =
+        `₹${total}`;
+    }
 
+
+    /* Remove buttons */
 
     cartItems
       .querySelectorAll(".remove-item")
-      .forEach(button => {
+      .forEach(function (button) {
 
         button.addEventListener(
           "click",
-          () => {
+          function () {
 
             const index =
               Number(button.dataset.index);
@@ -378,126 +421,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     OPEN CART
-  ========================================= */
-
-  function openCart() {
-
-    if (!cartDrawer) {
-      return;
-    }
-
-
-    cartDrawer.classList.add("open");
-
-
-    if (overlay) {
-      overlay.classList.add("active");
-    }
-
-
-    document.body.classList.add("no-scroll");
-
-  }
-
-
-  /* =========================================
-     CLOSE CART
-  ========================================= */
-
-  function closeCartDrawer() {
-
-    if (cartDrawer) {
-      cartDrawer.classList.remove("open");
-    }
-
-
-    if (overlay) {
-      overlay.classList.remove("active");
-    }
-
-
-    document.body.classList.remove("no-scroll");
-
-  }
-
-
-  on(
-    cartButton,
-    "click",
-    openCart
-  );
-
-
-  on(
-    closeCart,
-    "click",
-    closeCartDrawer
-  );
-
-
-  on(
-    overlay,
-    "click",
-    closeCartDrawer
-  );
-
-
-  /* =========================================
      SIZE SELECTION
   ========================================= */
 
   document
-    .querySelectorAll(".product-card")
-    .forEach(card => {
+    .querySelectorAll(".product-card .sizes button")
+    .forEach(function (button) {
 
-      const sizeButtons =
-        card.querySelectorAll(".sizes button");
+      button.addEventListener(
+        "click",
+        function () {
+
+          const sizeContainer =
+            button.closest(".sizes");
 
 
-      sizeButtons.forEach(button => {
+          if (!sizeContainer) {
+            return;
+          }
 
-        button.addEventListener(
-          "click",
-          () => {
 
-            sizeButtons.forEach(btn => {
+          sizeContainer
+            .querySelectorAll("button")
+            .forEach(function (btn) {
 
               btn.classList.remove("selected");
 
             });
 
 
-            button.classList.add("selected");
+          button.classList.add("selected");
 
-          }
-        );
-
-      });
+        }
+      );
 
     });
 
 
   /* =========================================
      PRODUCT 3 PAYMENT METHOD
-     
-     We add the choice when Product 3
-     is added to cart.
   ========================================= */
 
-  function askProduct3PaymentMethod() {
+  function getProduct3PaymentMethod() {
 
-    const choice =
-      window.prompt(
-        "RED DRAGON VINTAGE\n\n" +
-        "Choose payment method:\n\n" +
-        "1 = PREPAID\n" +
-        "2 = COD (Cash On Delivery)\n\n" +
-        "Enter 1 or 2:"
+    const selected =
+      document.querySelector(
+        'input[name="paymentMethod"]:checked'
       );
 
 
-    if (choice === "1") {
+    if (!selected) {
 
       return {
         method: "prepaid",
@@ -507,7 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    if (choice === "2") {
+    if (selected.value === "cod") {
 
       return {
         method: "cod",
@@ -517,150 +490,184 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    alert(
-      "Please select either Prepaid or COD."
-    );
-
-
-    return null;
+    return {
+      method: "prepaid",
+      shipping: PRODUCT_3_PREPAID_SHIPPING
+    };
 
   }
 
 
   /* =========================================
      ADD TO CART
+     
+     IMPORTANT:
+     Event delegation is used here.
+     This prevents the add-to-cart buttons
+     from breaking if the product section
+     changes.
   ========================================= */
 
-  document
-    .querySelectorAll(".add-to-cart")
-    .forEach(button => {
+  document.addEventListener(
+    "click",
+    function (event) {
 
-      button.addEventListener(
-        "click",
-        () => {
-
-          const card =
-            button.closest(".product-card");
+      const button =
+        event.target.closest(".add-to-cart");
 
 
-          if (!card) {
-            return;
-          }
+      if (!button) {
+        return;
+      }
 
 
-          const selectedSize =
-            card.querySelector(
-              ".sizes button.selected"
-            );
+      event.preventDefault();
+      event.stopPropagation();
 
 
-          if (!selectedSize) {
-
-            alert(
-              "Please select a size before adding the product to your cart."
-            );
-
-            return;
-          }
+      const card =
+        button.closest(".product-card");
 
 
-          const productId =
-            card.dataset.productId || "";
+      if (!card) {
+
+        console.error(
+          "Product card not found."
+        );
+
+        return;
+
+      }
 
 
-          const price =
-            Number(card.dataset.price) || 399;
+      /* Get selected size */
+
+      const selectedSize =
+        card.querySelector(
+          ".sizes button.selected"
+        );
 
 
-          const prebook =
-            Number(card.dataset.prebook) || 99;
+      if (!selectedSize) {
+
+        alert(
+          "Please select a size before adding the product to your cart."
+        );
+
+        return;
+
+      }
 
 
-          const product = {
+      /* Product information */
 
-            id: productId,
-
-            name:
-              card.dataset.name ||
-              "Product",
-
-            price: price,
-
-            prebook: prebook,
-
-            size:
-              selectedSize.dataset.size ||
-              "",
-
-            paymentMethod:
-              null,
-
-            shipping: 0
-
-          };
+      const productId =
+        card.dataset.productId || "";
 
 
-          /* =====================================
-             PRODUCT 3
-          ===================================== */
-
-          if (productId === "vintage") {
-
-            const paymentChoice =
-              askProduct3PaymentMethod();
+      const productName =
+        card.dataset.name ||
+        card.querySelector("h3")?.textContent.trim() ||
+        "Product";
 
 
-            if (!paymentChoice) {
-              return;
-            }
+      const price =
+        Number(card.dataset.price) || 399;
 
 
-            product.paymentMethod =
-              paymentChoice.method;
+      const prebook =
+        Number(card.dataset.prebook) || 99;
 
 
-            product.shipping =
-              paymentChoice.shipping;
+      /* Build product */
 
-          }
+      const product = {
+
+        id: productId,
+
+        name: productName,
+
+        price: price,
+
+        prebook: prebook,
+
+        size:
+          selectedSize.dataset.size ||
+          selectedSize.textContent.trim(),
+
+        paymentMethod: null,
+
+        shipping: 0
+
+      };
 
 
-          /* =====================================
-             ADD PRODUCT
-          ===================================== */
+      /* =====================================
+         PRODUCT 3
+      ===================================== */
 
-          cart.push(product);
+      if (productId === "vintage") {
 
-
-          updateCart();
-
-          openCart();
+        const paymentChoice =
+          getProduct3PaymentMethod();
 
 
-          button.textContent =
-            "ADDED ✓";
+        product.paymentMethod =
+          paymentChoice.method;
 
 
-          setTimeout(() => {
+        product.shipping =
+          paymentChoice.shipping;
 
-            if (productId === "vintage") {
+      }
 
-              button.textContent =
-                "ADD TO CART — ₹499";
 
-            } else {
+      /* =====================================
+         ADD TO CART
+      ===================================== */
 
-              button.textContent =
-                "ADD TO CART — ₹99 PRE-BOOK";
+      cart.push(product);
 
-            }
 
-          }, 1200);
-
-        }
+      console.log(
+        "Product added to cart:",
+        product
       );
 
-    });
+
+      updateCart();
+
+
+      openCart();
+
+
+      /* Button feedback */
+
+      const originalText =
+        button.textContent;
+
+
+      button.textContent =
+        "ADDED ✓";
+
+
+      button.disabled = true;
+
+
+      setTimeout(function () {
+
+        button.textContent =
+          originalText;
+
+
+        button.disabled =
+          false;
+
+      }, 1200);
+
+    },
+    true
+  );
 
 
   /* =========================================
@@ -669,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document
     .querySelectorAll(".product-card")
-    .forEach(card => {
+    .forEach(function (card) {
 
       const image =
         card.querySelector(".product-image");
@@ -694,20 +701,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      let showingBack = true;
+      let showingBack =
+        true;
 
 
       const backImage =
         image.dataset.back;
 
 
+      const frontImage =
+        image.dataset.front;
+
+
       if (backImage) {
 
         image.src =
           backImage;
-
-        image.alt =
-          `${card.dataset.name || "Product"} back view`;
 
         label.textContent =
           "BACK";
@@ -727,19 +736,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        image.style.opacity = "0";
+        image.style.opacity =
+          "0";
 
 
-        setTimeout(() => {
+        setTimeout(function () {
 
-          image.src = src;
+          image.src =
+            src;
 
-          image.alt = alt;
+          image.alt =
+            alt;
 
           label.textContent =
             labelText;
 
-          image.style.opacity = "1";
+          image.style.opacity =
+            "1";
 
         }, 100);
 
@@ -754,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         changeImage(
 
-          image.dataset.front,
+          frontImage,
 
           `${card.dataset.name || "Product"} front view`,
 
@@ -771,7 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         changeImage(
 
-          image.dataset.back,
+          backImage,
 
           `${card.dataset.name || "Product"} back view`,
 
@@ -798,14 +811,28 @@ document.addEventListener("DOMContentLoaded", () => {
       on(
         previous,
         "click",
-        toggleImage
+        function (event) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          toggleImage();
+
+        }
       );
 
 
       on(
         next,
         "click",
-        toggleImage
+        function (event) {
+
+          event.preventDefault();
+          event.stopPropagation();
+
+          toggleImage();
+
+        }
       );
 
 
@@ -825,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     searchButton,
     "click",
-    () => {
+    function () {
 
       if (!searchModal) {
         return;
@@ -840,7 +867,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (searchInput) {
 
         setTimeout(
-          () => searchInput.focus(),
+          function () {
+
+            searchInput.focus();
+
+          },
           100
         );
 
@@ -853,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     closeSearch,
     "click",
-    () => {
+    function () {
 
       if (searchModal) {
         searchModal.classList.remove("open");
@@ -868,7 +899,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     searchModal,
     "click",
-    event => {
+    function (event) {
 
       if (event.target === searchModal) {
 
@@ -885,7 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     searchForm,
     "submit",
-    event => {
+    function (event) {
 
       event.preventDefault();
 
@@ -910,13 +941,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       const products =
-        document.querySelectorAll(".product-card");
+        document.querySelectorAll(
+          ".product-card"
+        );
 
 
-      let found = false;
+      let found =
+        false;
 
 
-      products.forEach(product => {
+      products.forEach(function (product) {
 
         const name =
           (
@@ -927,7 +961,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (name.includes(query)) {
 
-          found = true;
+          found =
+            true;
 
 
           product.scrollIntoView({
@@ -946,7 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "Product found.";
 
 
-        setTimeout(() => {
+        setTimeout(function () {
 
           searchModal.classList.remove("open");
 
@@ -972,7 +1007,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     checkoutButton,
     "click",
-    () => {
+    function () {
 
       if (cart.length === 0) {
 
@@ -981,6 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
@@ -991,6 +1027,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
@@ -1008,10 +1045,12 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     closeCheckout,
     "click",
-    () => {
+    function () {
 
       if (checkoutModal) {
+
         checkoutModal.classList.remove("open");
+
       }
 
       document.body.classList.remove("no-scroll");
@@ -1028,8 +1067,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const productTotal =
       cart.reduce(
-        (sum, item) =>
-          sum + (Number(item.price) || 0),
+        function (sum, item) {
+
+          return sum +
+            (Number(item.price) || 0);
+
+        },
         0
       );
 
@@ -1038,48 +1081,50 @@ document.addEventListener("DOMContentLoaded", () => {
       calculateCartPaymentTotal();
 
 
-    /*
-      Product 1/2:
-      prebook is ₹99.
-
-      Product 3:
-      full amount is paid.
-    */
-
-    const totalPrebook =
+    const totalShipping =
       cart.reduce(
-        (sum, item) => {
+        function (sum, item) {
 
-          if (isProduct3(item)) {
-            return sum;
-          }
-
-          return (
-            sum +
-            (Number(item.prebook) || 99)
-          );
+          return sum +
+            getProductShipping(item);
 
         },
         0
       );
 
 
-    const totalShipping =
+    const totalPrebook =
       cart.reduce(
-        (sum, item) =>
-          sum + getProductShipping(item),
+        function (sum, item) {
+
+          if (isProduct3(item)) {
+            return sum;
+          }
+
+          return sum +
+            (Number(item.prebook) || 99);
+
+        },
         0
       );
 
 
     const balanceDue =
-      Math.max(
-        productTotal +
-        totalShipping -
-        totalPrebook -
-        totalPayNow +
-        totalPayNow -
-        totalPayNow,
+      cart.reduce(
+        function (sum, item) {
+
+          if (isProduct3(item)) {
+            return sum;
+          }
+
+          return sum +
+            Math.max(
+              (Number(item.price) || 0) -
+              (Number(item.prebook) || 99),
+              0
+            );
+
+        },
         0
       );
 
@@ -1110,60 +1155,164 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (paymentBalance) {
 
-      /*
-        For Product 3 prepaid/COD,
-        there is nothing left to pay.
+      paymentBalance.textContent =
+        `₹${balanceDue}`;
 
-        For Product 1/2,
-        remaining balance is product price - ₹99.
-      */
+    }
 
-      const remainingBalance =
-        cart.reduce(
-          (sum, item) => {
 
-            if (isProduct3(item)) {
-              return sum;
-            }
+    /* Shipping */
 
-            return (
-              sum +
-              Math.max(
-                (Number(item.price) || 0) -
-                (Number(item.prebook) || 99),
-                0
-              )
-            );
+    if (paymentShippingRow) {
 
-          },
-          0
+      if (totalShipping > 0) {
+
+        paymentShippingRow.style.display =
+          "flex";
+
+        if (paymentShipping) {
+
+          paymentShipping.textContent =
+            `₹${totalShipping}`;
+
+        }
+
+      } else {
+
+        paymentShippingRow.style.display =
+          "none";
+
+      }
+
+    }
+
+
+    /* Product 3 payment method */
+
+    const hasProduct3 =
+      cart.some(function (item) {
+
+        return isProduct3(item);
+
+      });
+
+
+    if (paymentMethodSection) {
+
+      paymentMethodSection.style.display =
+        hasProduct3 ? "block" : "none";
+
+    }
+
+
+    /*
+      If Product 3 is in cart, show the
+      payment method section.
+    */
+
+    if (hasProduct3) {
+
+      const selected =
+        document.querySelector(
+          'input[name="paymentMethod"]:checked'
         );
 
 
-      paymentBalance.textContent =
-        `₹${remainingBalance}`;
+      if (selected) {
+
+        cart.forEach(function (item) {
+
+          if (isProduct3(item)) {
+
+            item.paymentMethod =
+              selected.value;
+
+            item.shipping =
+              selected.value === "cod"
+                ? PRODUCT_3_COD_SHIPPING
+                : PRODUCT_3_PREPAID_SHIPPING;
+
+          }
+
+        });
+
+      }
 
     }
 
 
     return {
+
       productTotal,
+
       totalPayNow,
+
+      totalShipping,
+
       totalPrebook,
-      totalShipping
+
+      balanceDue
+
     };
 
   }
 
 
   /* =========================================
-     CUSTOMER DETAILS → PAYMENT
+     PAYMENT METHOD CHANGE
+  ========================================= */
+
+  document
+    .querySelectorAll(
+      'input[name="paymentMethod"]'
+    )
+    .forEach(function (radio) {
+
+      radio.addEventListener(
+        "change",
+        function () {
+
+          if (cart.length === 0) {
+            return;
+          }
+
+
+          cart.forEach(function (item) {
+
+            if (isProduct3(item)) {
+
+              item.paymentMethod =
+                radio.value;
+
+
+              item.shipping =
+                radio.value === "cod"
+                  ? PRODUCT_3_COD_SHIPPING
+                  : PRODUCT_3_PREPAID_SHIPPING;
+
+            }
+
+          });
+
+
+          updateCart();
+
+          updatePaymentScreen();
+
+        }
+      );
+
+    });
+
+
+  /* =========================================
+     CUSTOMER FORM → PAYMENT
   ========================================= */
 
   on(
     customerForm,
     "submit",
-    async event => {
+    async function (event) {
 
       event.preventDefault();
 
@@ -1175,6 +1324,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
@@ -1201,52 +1351,84 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
+
       }
 
 
-      /* =====================================
-         CALCULATE ORDER
-      ===================================== */
+      /* Make sure Product 3 has current payment method */
+
+      const selectedPaymentMethod =
+        document.querySelector(
+          'input[name="paymentMethod"]:checked'
+        );
+
+
+      if (selectedPaymentMethod) {
+
+        cart.forEach(function (item) {
+
+          if (isProduct3(item)) {
+
+            item.paymentMethod =
+              selectedPaymentMethod.value;
+
+
+            item.shipping =
+              selectedPaymentMethod.value === "cod"
+                ? PRODUCT_3_COD_SHIPPING
+                : PRODUCT_3_PREPAID_SHIPPING;
+
+          }
+
+        });
+
+      }
+
 
       const orderDetails =
-        cart
-          .map(
-            (item, index) => {
+        cart.map(
+          function (item, index) {
 
-              const shipping =
-                getProductShipping(item);
-
-
-              const payNow =
-                getProductPaymentAmount(item);
+            const shipping =
+              getProductShipping(item);
 
 
-              return (
-                `${index + 1}. ${item.name}\n` +
-                `   Size: ${item.size}\n` +
-                `   Product Price: ₹${item.price}\n` +
-                `   Payment Method: ${
-                  isProduct3(item)
-                    ? (
-                      item.paymentMethod === "cod"
-                        ? "COD"
-                        : "PREPAID"
-                    )
-                    : "₹99 PRE-BOOK"
-                }\n` +
-                `   Shipping: ₹${shipping}\n` +
-                `   Pay Now: ₹${payNow}`
-              );
+            const payNow =
+              getProductPaymentAmount(item);
 
-            }
-          )
-          .join("\n\n");
+
+            const paymentMethod =
+              isProduct3(item)
+                ? (
+                  item.paymentMethod === "cod"
+                    ? "COD — CASH ON DELIVERY"
+                    : "PREPAID"
+                )
+                : "₹99 PRE-BOOK";
+
+
+            return (
+              `${index + 1}. ${item.name}\n` +
+              `   Size: ${item.size}\n` +
+              `   Product Price: ₹${item.price}\n` +
+              `   Payment Method: ${paymentMethod}\n` +
+              `   Shipping: ₹${shipping}\n` +
+              `   Pay Now: ₹${payNow}`
+            );
+
+          }
+        )
+        .join("\n\n");
 
 
       const productTotal =
         cart.reduce(
-          (sum, item) =>
-            sum + (Number(item.price) || 0),
+          function (sum, item) {
+
+            return sum +
+              (Number(item.price) || 0);
+
+          },
           0
         );
 
@@ -1257,24 +1439,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const totalShipping =
         cart.reduce(
-          (sum, item) =>
-            sum + getProductShipping(item),
-          0
-        );
+          function (sum, item) {
 
-
-      const totalPrebook =
-        cart.reduce(
-          (sum, item) => {
-
-            if (isProduct3(item)) {
-              return sum;
-            }
-
-            return (
-              sum +
-              (Number(item.prebook) || 99)
-            );
+            return sum +
+              getProductShipping(item);
 
           },
           0
@@ -1283,20 +1451,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const balanceDue =
         cart.reduce(
-          (sum, item) => {
+          function (sum, item) {
 
             if (isProduct3(item)) {
               return sum;
             }
 
-            return (
-              sum +
+
+            return sum +
               Math.max(
                 (Number(item.price) || 0) -
                 (Number(item.prebook) || 99),
                 0
-              )
-            );
+              );
 
           },
           0
@@ -1386,36 +1553,39 @@ document.addEventListener("DOMContentLoaded", () => {
       if (verificationNoteField) {
 
         verificationNoteField.value =
-          "Customer submitted payment information. Verify payment manually before confirming the order.";
+          "Customer submitted order details. Verify payment manually before confirming the order.";
 
       }
 
 
-      /* =====================================
-         PAYMENT SCREEN
-      ===================================== */
+      /* Update payment screen */
 
       updatePaymentScreen();
 
 
       if (paymentStatus) {
-        paymentStatus.textContent = "";
+
+        paymentStatus.textContent =
+          "";
+
       }
 
 
       if (utrInput) {
-        utrInput.value = "";
+
+        utrInput.value =
+          "";
+
       }
 
 
       if (utrTransactionId) {
-        utrTransactionId.value = "";
+
+        utrTransactionId.value =
+          "";
+
       }
 
-
-      /* =====================================
-         CLOSE CUSTOMER FORM
-      ===================================== */
 
       if (checkoutModal) {
 
@@ -1423,10 +1593,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
-
-      /* =====================================
-         OPEN PAYMENT
-      ===================================== */
 
       if (paymentModal) {
 
@@ -1448,10 +1614,12 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     closePayment,
     "click",
-    () => {
+    function () {
 
       if (paymentModal) {
+
         paymentModal.classList.remove("open");
+
       }
 
       document.body.classList.remove("no-scroll");
@@ -1467,7 +1635,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     copyUpi,
     "click",
-    async () => {
+    async function () {
 
       const upi =
         "8919131887@axl";
@@ -1482,14 +1650,18 @@ document.addEventListener("DOMContentLoaded", () => {
           "COPIED ✓";
 
 
-        setTimeout(() => {
+        setTimeout(
+          function () {
 
-          copyUpi.textContent =
-            "COPY UPI ID";
+            copyUpi.textContent =
+              "COPY UPI ID";
 
-        }, 1500);
+          },
+          1500
+        );
 
-      } catch {
+
+      } catch (error) {
 
         alert(
           `UPI ID: ${upi}`
@@ -1508,7 +1680,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     paymentSuccess,
     "click",
-    async () => {
+    async function () {
 
       if (!paymentSuccess) {
         return;
@@ -1563,7 +1735,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      paymentSuccess.disabled = true;
+      paymentSuccess.disabled =
+        true;
+
 
       paymentSuccess.textContent =
         "SUBMITTING...";
@@ -1621,9 +1795,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const productTotal =
           cart.reduce(
-            (sum, item) =>
-              sum +
-              (Number(item.price) || 0),
+            function (sum, item) {
+
+              return sum +
+                (Number(item.price) || 0);
+
+            },
             0
           );
 
@@ -1634,30 +1811,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const totalShipping =
           cart.reduce(
-            (sum, item) =>
-              sum +
-              getProductShipping(item),
+            function (sum, item) {
+
+              return sum +
+                getProductShipping(item);
+
+            },
             0
           );
 
 
         const balanceDue =
           cart.reduce(
-            (sum, item) => {
+            function (sum, item) {
 
               if (isProduct3(item)) {
                 return sum;
               }
 
 
-              return (
-                sum +
+              return sum +
                 Math.max(
                   (Number(item.price) || 0) -
                   (Number(item.prebook) || 99),
                   0
-                )
-              );
+                );
 
             },
             0
@@ -1665,43 +1843,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         const orderDetails =
-          cart
-            .map(
-              (item, index) => {
+          cart.map(
+            function (item, index) {
 
-                const shipping =
-                  getProductShipping(item);
-
-
-                const payNow =
-                  getProductPaymentAmount(item);
+              const shipping =
+                getProductShipping(item);
 
 
-                return (
-                  `${index + 1}. ${item.name} | ` +
-                  `Size: ${item.size} | ` +
-                  `Price: ₹${item.price} | ` +
-                  `Payment: ${
-                    isProduct3(item)
-                      ? (
-                        item.paymentMethod === "cod"
-                          ? "COD"
-                          : "PREPAID"
-                      )
-                      : "₹99 PRE-BOOK"
-                  } | ` +
-                  `Shipping: ₹${shipping} | ` +
-                  `Pay Now: ₹${payNow}`
-                );
-
-              }
-            )
-            .join("\n");
+              const payNow =
+                getProductPaymentAmount(item);
 
 
-        /* =====================================
-           UTR
-        ===================================== */
+              const paymentMethod =
+                isProduct3(item)
+                  ? (
+                    item.paymentMethod === "cod"
+                      ? "COD — CASH ON DELIVERY"
+                      : "PREPAID"
+                  )
+                  : "₹99 PRE-BOOK";
+
+
+              return (
+                `${index + 1}. ${item.name} | ` +
+                `Size: ${item.size} | ` +
+                `Price: ₹${item.price} | ` +
+                `Payment: ${paymentMethod} | ` +
+                `Shipping: ₹${shipping} | ` +
+                `Pay Now: ₹${payNow}`
+              );
+
+            }
+          )
+          .join("\n");
+
+
+        /* UTR */
 
         if (utrTransactionId) {
 
@@ -1839,7 +2016,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         /* =====================================
-           SEND FORM
+           SEND TO FORMSPREE
         ===================================== */
 
         const formData =
@@ -1882,13 +2059,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
               errorMessage =
                 result.errors
-                  .map(error => error.message)
+                  .map(
+                    function (error) {
+                      return error.message;
+                    }
+                  )
                   .join(" ");
 
             }
 
-          } catch {
-            // Ignore JSON parsing errors.
+          } catch (error) {
+            /* Ignore JSON parsing error */
           }
 
 
@@ -1915,37 +2096,39 @@ document.addEventListener("DOMContentLoaded", () => {
           "UTR SUBMITTED ✓";
 
 
-        setTimeout(() => {
+        setTimeout(
+          function () {
 
-          if (paymentModal) {
+            if (paymentModal) {
 
-            paymentModal.classList.remove("open");
+              paymentModal.classList.remove("open");
 
-          }
-
-
-          if (successModal) {
-
-            successModal.classList.add("open");
-
-          }
+            }
 
 
-          cart = [];
+            if (successModal) {
+
+              successModal.classList.add("open");
+
+            }
 
 
-          updateCart();
+            cart = [];
 
 
-          paymentSuccess.disabled =
-            false;
+            updateCart();
 
 
-          paymentSuccess.textContent =
-            "SUBMIT UTR & PLACE ORDER";
+            paymentSuccess.disabled =
+              false;
 
 
-        }, 1000);
+            paymentSuccess.textContent =
+              "SUBMIT UTR & PLACE ORDER";
+
+          },
+          1000
+        );
 
 
       } catch (error) {
@@ -1985,7 +2168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     newsletterForm,
     "submit",
-    event => {
+    function (event) {
 
       event.preventDefault();
 
@@ -2008,7 +2191,7 @@ document.addEventListener("DOMContentLoaded", () => {
   on(
     closeSuccess,
     "click",
-    () => {
+    function () {
 
       if (successModal) {
 
@@ -2069,11 +2252,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document
     .querySelectorAll('a[href^="#"]')
-    .forEach(link => {
+    .forEach(function (link) {
 
       link.addEventListener(
         "click",
-        event => {
+        function (event) {
 
           const href =
             link.getAttribute("href");
@@ -2119,7 +2302,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener(
     "keydown",
-    event => {
+    function (event) {
 
       if (event.key !== "Escape") {
         return;
@@ -2167,5 +2350,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ========================================= */
 
   updateCart();
+
+
+  console.log(
+    "The Red Dragon Streetwear script loaded successfully."
+  );
 
 });
