@@ -1706,3 +1706,33 @@ img {
     font-size: 12px !important;
   }
 }
+
+/* =========================================
+   PRODUCT 3 PAYMENT OPTIONS
+   STACK PREPAID & COD VERTICALLY
+========================================= */
+
+.payment-method-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.payment-method-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.payment-method-option input[type="radio"] {
+  flex-shrink: 0;
+}
+
+.payment-method-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
