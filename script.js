@@ -1,12 +1,25 @@
 /* =========================================
    THE RED DRAGON STREETWEAR
    COMPLETE JAVASCRIPT
-   FIXED CHECKOUT + CART + GALLERY
+   PRODUCT 1 & 2 = ₹99 PRE-BOOK
+   PRODUCT 3 = FULL PRICE + PREPAID / COD
 ========================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
   "use strict";
+
+
+  /* =========================================
+     CONFIGURATION
+  ========================================= */
+
+  // Change this number if your COD shipping charge is different.
+  const COD_SHIPPING_CHARGE = 40;
+
+  // Prepaid shipping charge.
+  // Change to your actual prepaid shipping charge if applicable.
+  const PREPAID_SHIPPING_CHARGE = 0;
 
 
   /* =========================================
@@ -18,11 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   const on = (element, event, handler) => {
-
     if (element) {
       element.addEventListener(event, handler);
     }
-
   };
 
 
@@ -42,124 +53,446 @@ document.addEventListener("DOMContentLoaded", () => {
      ELEMENTS
   ========================================= */
 
-  const cartButton =
-    get("cartButton");
+  const cartButton = get("cartButton");
+  const cartDrawer = get("cartDrawer");
+  const closeCart = get("closeCart");
+  const overlay = get("overlay");
+  const cartItems = get("cartItems");
+  const cartCount = get("cartCount");
+  const cartTotal = get("cartTotal");
+  const checkoutButton = get("checkoutButton");
 
-  const cartDrawer =
-    get("cartDrawer");
+  const searchButton = get("searchButton");
+  const searchModal = get("searchModal");
+  const closeSearch = get("closeSearch");
+  const searchForm = get("searchForm");
+  const searchInput = get("searchInput");
+  const searchResult = get("searchResult");
 
-  const closeCart =
-    get("closeCart");
+  const checkoutModal = get("checkoutModal");
+  const closeCheckout = get("closeCheckout");
+  const customerForm = get("customerForm");
 
-  const overlay =
-    get("overlay");
+  const paymentModal = get("paymentModal");
+  const closePayment = get("closePayment");
 
-  const cartItems =
-    get("cartItems");
+  const paymentAmount = get("paymentAmount");
+  const paymentProductTotal = get("paymentProductTotal");
+  const paymentPrebookTotal = get("paymentPrebookTotal");
+  const paymentBalance = get("paymentBalance");
 
-  const cartCount =
-    get("cartCount");
+  const paymentSuccess = get("paymentSuccess");
+  const paymentStatus = get("paymentStatus");
 
-  const cartTotal =
-    get("cartTotal");
+  const utrInput = get("utrInput");
+  const utrTransactionId = get("utrTransactionId");
 
-  const checkoutButton =
-    get("checkoutButton");
-   /* Force checkout button to remain visible */
-if (checkoutButton) {
-  checkoutButton.style.display = "flex";
-  checkoutButton.style.visibility = "visible";
-  checkoutButton.style.opacity = "1";
-}
+  const emailSubject = get("emailSubject");
+  const replyTo = get("replyTo");
+  const orderReferenceField = get("orderReference");
+  const orderReceipt = get("orderReceipt");
 
+  const paymentStatusField = get("paymentStatusField");
+  const productTotalField = get("productTotalField");
+  const prebookTotalField = get("prebookTotalField");
+  const verificationNoteField = get("verificationNoteField");
 
-  const searchButton =
-    get("searchButton");
+  const copyUpi = get("copyUpi");
 
-  const searchModal =
-    get("searchModal");
+  const successModal = get("successModal");
+  const closeSuccess = get("closeSuccess");
 
-  const closeSearch =
-    get("closeSearch");
-
-  const searchForm =
-    get("searchForm");
-
-  const searchInput =
-    get("searchInput");
-
-  const searchResult =
-    get("searchResult");
-
-
-  const checkoutModal =
-    get("checkoutModal");
-
-  const closeCheckout =
-    get("closeCheckout");
-
-  const customerForm =
-    get("customerForm");
+  const newsletterForm = get("newsletterForm");
 
 
-  const paymentModal =
-    get("paymentModal");
+  /* =========================================
+     PAYMENT METHOD UI
+     
+     We create the payment-method selector
+     dynamically so you don't have to manually
+     edit the HTML payment section.
+  ========================================= */
 
-  const closePayment =
-    get("closePayment");
+  function createPaymentMethodSelector() {
 
-  const paymentAmount =
-    get("paymentAmount");
+    if (!paymentModal) {
+      return;
+    }
 
-  const paymentProductTotal =
-    get("paymentProductTotal");
+    // Don't create twice.
+    if (get("paymentMethodSection")) {
+      return;
+    }
 
-  const paymentSuccess =
-    get("paymentSuccess");
+    const paymentBox =
+      paymentModal.querySelector(".payment-box");
 
-  const paymentStatus =
-    get("paymentStatus");
+    if (!paymentBox) {
+      return;
+    }
 
-  const utrInput =
-    get("utrInput");
+    const section =
+      document.createElement("div");
 
-  const utrTransactionId =
-    get("utrTransactionId");
+    section.id = "paymentMethodSection";
 
-  const emailSubject =
-  get("emailSubject");
+    section.style.marginTop = "20px";
+    section.style.marginBottom = "20px";
+    section.style.padding = "16px";
+    section.style.border = "1px solid rgba(255,255,255,0.15)";
+    section.style.borderRadius = "10px";
 
-const replyTo =
-  get("replyTo");
+    section.innerHTML = `
 
-const orderReferenceField =
-  get("orderReference");
-   
-  const orderReceipt =
-    get("orderReceipt");
-  const paymentStatusField =
-    get("paymentStatusField");
-  const productTotalField =
-    get("productTotalField");
-  const prebookTotalField =
-    get("prebookTotalField");
-  const verificationNoteField =
-    get("verificationNoteField");
+      <div style="
+        font-size:12px;
+        letter-spacing:1px;
+        font-weight:700;
+        margin-bottom:12px;
+      ">
+        PAYMENT METHOD
+      </div>
+
+      <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+      ">
+
+        <label style="
+          flex:1;
+          min-width:130px;
+          cursor:pointer;
+        ">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="prepaid"
+            id="paymentPrepaid"
+            checked
+          >
+
+          <span style="
+            display:block;
+            padding:12px;
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:8px;
+            margin-top:5px;
+          ">
+            PREPAID
+            <small style="
+              display:block;
+              margin-top:5px;
+              opacity:.7;
+            ">
+              Pay online
+            </small>
+          </span>
+
+        </label>
 
 
-  const copyUpi =
-    get("copyUpi");
+        <label style="
+          flex:1;
+          min-width:130px;
+          cursor:pointer;
+        ">
+
+          <input
+            type="radio"
+            name="paymentMethod"
+            value="cod"
+            id="paymentCOD"
+          >
+
+          <span style="
+            display:block;
+            padding:12px;
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:8px;
+            margin-top:5px;
+          ">
+            COD
+            <small style="
+              display:block;
+              margin-top:5px;
+              opacity:.7;
+            ">
+              ₹${COD_SHIPPING_CHARGE} shipping applicable
+            </small>
+          </span>
+
+        </label>
+
+      </div>
+
+      <div
+        id="shippingChargeDisplay"
+        style="
+          margin-top:12px;
+          font-size:13px;
+          opacity:.8;
+        "
+      ></div>
+
+    `;
+
+    const utrSection =
+      paymentBox.querySelector(".utr-section");
+
+    if (utrSection) {
+      paymentBox.insertBefore(
+        section,
+        utrSection
+      );
+    } else {
+      paymentBox.appendChild(section);
+    }
 
 
-  const successModal =
-    get("successModal");
+    const prepaidRadio =
+      get("paymentPrepaid");
 
-  const closeSuccess =
-    get("closeSuccess");
+    const codRadio =
+      get("paymentCOD");
 
 
-  const newsletterForm =
-    get("newsletterForm");
+    on(
+      prepaidRadio,
+      "change",
+      updatePaymentMethodUI
+    );
+
+    on(
+      codRadio,
+      "change",
+      updatePaymentMethodUI
+    );
+
+  }
+
+
+  function getSelectedPaymentMethod() {
+
+    const selected =
+      document.querySelector(
+        'input[name="paymentMethod"]:checked'
+      );
+
+    return selected
+      ? selected.value
+      : "prepaid";
+
+  }
+
+
+  function updatePaymentMethodUI() {
+
+    if (!cart.length) {
+      return;
+    }
+
+    const method =
+      getSelectedPaymentMethod();
+
+    const productTotal =
+      cart.reduce(
+        (sum, item) =>
+          sum + (Number(item.price) || 0),
+        0
+      );
+
+    const prebookTotal =
+      cart.reduce(
+        (sum, item) =>
+          sum + (Number(item.prebook) || 0),
+        0
+      );
+
+    /*
+      Product 3 is a full-payment product.
+      Product 1 & 2 are pre-book products.
+    */
+
+    const hasFullPaymentProduct =
+      cart.some(
+        item => item.prebook === 0
+      );
+
+    let shipping = 0;
+
+    if (hasFullPaymentProduct) {
+
+      if (method === "cod") {
+        shipping = COD_SHIPPING_CHARGE;
+      } else {
+        shipping = PREPAID_SHIPPING_CHARGE;
+      }
+
+    }
+
+
+    const amountDue =
+      hasFullPaymentProduct
+        ? productTotal + shipping
+        : prebookTotal;
+
+
+    if (paymentAmount) {
+      paymentAmount.textContent =
+        `₹${amountDue}`;
+    }
+
+
+    if (paymentProductTotal) {
+      paymentProductTotal.textContent =
+        `₹${productTotal}`;
+    }
+
+
+    if (paymentPrebookTotal) {
+
+      if (hasFullPaymentProduct) {
+
+        paymentPrebookTotal.textContent =
+          "₹0";
+
+      } else {
+
+        paymentPrebookTotal.textContent =
+          `₹${prebookTotal}`;
+
+      }
+
+    }
+
+
+    if (paymentBalance) {
+
+      const balance =
+        Math.max(
+          productTotal - prebookTotal,
+          0
+        );
+
+      paymentBalance.textContent =
+        `₹${balance}`;
+
+    }
+
+
+    const shippingDisplay =
+      get("shippingChargeDisplay");
+
+    if (shippingDisplay) {
+
+      if (hasFullPaymentProduct) {
+
+        shippingDisplay.textContent =
+          method === "cod"
+            ? `COD SHIPPING CHARGE: ₹${COD_SHIPPING_CHARGE}`
+            : `PREPAID SHIPPING CHARGE: ₹${PREPAID_SHIPPING_CHARGE}`;
+
+      } else {
+
+        shippingDisplay.textContent =
+          "Shipping charges will be applicable at dispatch.";
+
+      }
+
+    }
+
+
+    /*
+      COD does not require UTR.
+      Prepaid requires UTR.
+    */
+
+    const utrSection =
+      paymentModal?.querySelector(".utr-section");
+
+    const paymentInstruction =
+      paymentModal?.querySelector(".payment-instruction");
+
+    const upiBox =
+      paymentModal?.querySelector(".upi-box");
+
+    const qrBox =
+      paymentModal?.querySelector(".qr-placeholder");
+
+
+    if (method === "cod") {
+
+      if (utrSection) {
+        utrSection.style.display = "none";
+      }
+
+      if (upiBox) {
+        upiBox.style.display = "none";
+      }
+
+      if (qrBox) {
+        qrBox.style.display = "none";
+      }
+
+      if (paymentInstruction) {
+
+        paymentInstruction.textContent =
+          `You selected Cash On Delivery. ₹${COD_SHIPPING_CHARGE} COD shipping charges are applicable. You do not need to make an online payment or submit a UTR.`;
+
+      }
+
+      if (paymentSuccess) {
+
+        paymentSuccess.textContent =
+          "PLACE COD ORDER";
+
+      }
+
+    } else {
+
+      if (utrSection) {
+        utrSection.style.display = "";
+      }
+
+      if (upiBox) {
+        upiBox.style.display = "";
+      }
+
+      if (qrBox) {
+        qrBox.style.display = "";
+      }
+
+      if (paymentInstruction) {
+
+        if (hasFullPaymentProduct) {
+
+          paymentInstruction.textContent =
+            `Pay ₹${amountDue} using UPI. After the payment is successful, enter your UTR / Transaction ID below.`;
+
+        } else {
+
+          paymentInstruction.textContent =
+            `Send the ₹${prebookTotal} pre-booking amount using UPI. After the payment is successful, enter your UTR / Transaction ID below.`;
+
+        }
+
+      }
+
+      if (paymentSuccess) {
+
+        paymentSuccess.textContent =
+          "SUBMIT UTR & PLACE ORDER";
+
+      }
+
+    }
+
+  }
+
+
+  createPaymentMethodSelector();
 
 
   /* =========================================
@@ -175,12 +508,10 @@ const orderReferenceField =
       return;
     }
 
-
     section.scrollIntoView({
       behavior: "smooth",
       block: "start"
     });
-
 
     try {
 
@@ -193,7 +524,7 @@ const orderReferenceField =
     } catch (error) {
 
       console.warn(
-        "Could not  URL hash.",
+        "Could not update URL hash.",
         error
       );
 
@@ -217,14 +548,12 @@ const orderReferenceField =
             return;
           }
 
-
           const targetId =
             href.substring(1);
 
           if (!targetId) {
             return;
           }
-
 
           const target =
             document.getElementById(
@@ -234,7 +563,6 @@ const orderReferenceField =
           if (!target) {
             return;
           }
-
 
           event.preventDefault();
 
@@ -253,126 +581,123 @@ const orderReferenceField =
   let cart = [];
 
 
- function updateCart() {
+  function updateCart() {
 
-  if (
-    !cartItems ||
-    !cartCount ||
-    !cartTotal
-  ) {
-    return;
-  }
+    if (
+      !cartItems ||
+      !cartCount ||
+      !cartTotal
+    ) {
+      return;
+    }
 
-  cartItems.innerHTML = "";
 
-  if (cart.length === 0) {
+    cartItems.innerHTML = "";
 
-    cartItems.innerHTML =
-      "<p>Your cart is empty.</p>";
 
-    cartCount.textContent = "";
+    if (cart.length === 0) {
 
-    cartTotal.textContent = "₹0";
+      cartItems.innerHTML =
+        "<p>Your cart is empty.</p>";
 
-    return;
-  }
+      cartCount.textContent = "";
 
-  let paymentTotal = 0;
+      cartTotal.textContent = "₹0";
 
-  cart.forEach((item, index) => {
+      return;
 
-    paymentTotal +=
-      Number(item.prebook) || 0;
+    }
 
-    const isFullPayment =
-      item.paymentType === "full";
 
-    const itemElement =
-      document.createElement("div");
+    let cartPayableTotal = 0;
 
-    itemElement.className =
-      "cart-product";
 
-    itemElement.innerHTML = `
+    cart.forEach((item, index) => {
 
-      <div class="cart-product-top">
+      const isFullPayment =
+        Number(item.prebook) === 0;
 
-        <div>
 
-          <strong>
-            ${escapeHtml(item.name)}
-          </strong>
+      const amountShown =
+        isFullPayment
+          ? Number(item.price)
+          : Number(item.prebook);
 
-          <small>
-            Size: ${escapeHtml(item.size)}
-          </small>
 
-          <small>
-            Product Price:
-            ₹${Number(item.price) || 0}
-          </small>
+      cartPayableTotal +=
+        amountShown;
 
-          <small>
+
+      const itemElement =
+        document.createElement("div");
+
+
+      itemElement.className =
+        "cart-product";
+
+
+      itemElement.innerHTML = `
+
+        <div class="cart-product-top">
+
+          <div>
+
+            <strong>
+              ${escapeHtml(item.name)}
+            </strong>
+
+            <small>
+              Size: ${escapeHtml(item.size)}
+            </small>
+
+            <small>
+              Actual price:
+              ₹${Number(item.price) || 0}
+            </small>
+
             ${
               isFullPayment
-                ? "Payment: Full Price ₹" + (Number(item.price) || 0)
-                : "Pre-booking: ₹" + (Number(item.prebook) || 0)
+                ? `
+                  <small>
+                    Payment:
+                    FULL PRICE
+                  </small>
+
+                  <small>
+                    Shipping:
+                    PREPAID / COD APPLICABLE
+                  </small>
+                `
+                : `
+                  <small>
+                    Pre-book:
+                    ₹${Number(item.prebook) || 0}
+                  </small>
+
+                  <small>
+                    Balance on delivery:
+                    ₹${Math.max(
+                      Number(item.price) -
+                      Number(item.prebook),
+                      0
+                    )}
+                  </small>
+                `
             }
-          </small>
+
+          </div>
+
+          <button
+            class="remove-item"
+            type="button"
+            data-index="${index}"
+          >
+            REMOVE
+          </button>
 
         </div>
 
-        <button
-          class="remove-item"
-          type="button"
-          data-index="${index}"
-        >
-          REMOVE
-        </button>
-
-      </div>
-
-    `;
-
-    cartItems.appendChild(itemElement);
-
-  });
-
-  cartCount.textContent =
-    cart.length;
-
-  cartTotal.textContent =
-    `₹${paymentTotal}`;
-
-  cartItems
-    .querySelectorAll(".remove-item")
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const index =
-            Number(button.dataset.index);
-
-          if (
-            Number.isInteger(index) &&
-            index >= 0 &&
-            index < cart.length
-          ) {
-
-            cart.splice(index, 1);
-
-            updateCart();
-
-          }
-
-        }
-      );
-
-    });
-
-}
+      `;
 
 
       cartItems.appendChild(
@@ -382,12 +707,20 @@ const orderReferenceField =
     });
 
 
-    cartCount.textContent =
-      cart.length;
+    /*
+      If Product 3 is present, cart total is
+      its actual price.
 
+      Product 1 & 2 continue showing their
+      ₹99 pre-book amount.
+    */
 
     cartTotal.textContent =
-      `₹${prebookTotal}`;
+      `₹${cartPayableTotal}`;
+
+
+    cartCount.textContent =
+      cart.length;
 
 
     cartItems
@@ -400,7 +733,6 @@ const orderReferenceField =
 
             const index =
               Number(button.dataset.index);
-
 
             if (
               Number.isInteger(index) &&
@@ -432,24 +764,13 @@ const orderReferenceField =
       return;
     }
 
-
-    cartDrawer.classList.add(
-      "open"
-    );
-
+    cartDrawer.classList.add("open");
 
     if (overlay) {
-
-      overlay.classList.add(
-        "active"
-      );
-
+      overlay.classList.add("active");
     }
 
-
-    document.body.classList.add(
-      "no-scroll"
-    );
+    document.body.classList.add("no-scroll");
 
   }
 
@@ -457,26 +778,14 @@ const orderReferenceField =
   function closeCartDrawer() {
 
     if (cartDrawer) {
-
-      cartDrawer.classList.remove(
-        "open"
-      );
-
+      cartDrawer.classList.remove("open");
     }
-
 
     if (overlay) {
-
-      overlay.classList.remove(
-        "active"
-      );
-
+      overlay.classList.remove("active");
     }
 
-
-    document.body.classList.remove(
-      "no-scroll"
-    );
+    document.body.classList.remove("no-scroll");
 
   }
 
@@ -530,7 +839,6 @@ const orderReferenceField =
 
             });
 
-
             button.classList.add(
               "selected"
             );
@@ -583,32 +891,47 @@ const orderReferenceField =
           }
 
 
+          const productId =
+            card.dataset.productId || "";
+
+
+          /*
+            PRODUCT 3 / VINTAGE
+            --------------------------------
+            No ₹99 pre-book.
+            Customer pays actual price.
+          */
+
+          const isProduct3 =
+            productId === "vintage";
+
+
           const product = {
 
-  id:
-    card.dataset.productId || "",
+            id:
+              productId,
 
-  name:
-    card.dataset.name ||
-    "Product",
+            name:
+              card.dataset.name ||
+              "Product",
 
-  price:
-    Number(card.dataset.price) ||
-    399,
+            price:
+              Number(card.dataset.price) ||
+              399,
 
-  prebook:
-    Number(card.dataset.prebook) ||
-    99,
+            prebook:
+              isProduct3
+                ? 0
+                : (
+                    Number(card.dataset.prebook) ||
+                    99
+                  ),
 
-  paymentType:
-    card.dataset.paymentType ||
-    "prebook",
+            size:
+              selectedSize.dataset.size ||
+              ""
 
-  size:
-    selectedSize.dataset.size ||
-    ""
-
-};
+          };
 
 
           cart.push(product);
@@ -625,10 +948,17 @@ const orderReferenceField =
 
           setTimeout(() => {
 
-            button.textContent =
-  product.paymentType === "full"
-    ? "ADD TO CART — ₹499"
-    : "ADD TO CART — ₹99 PRE-BOOK";
+            if (isProduct3) {
+
+              button.textContent =
+                "ADD TO CART — ₹499";
+
+            } else {
+
+              button.textContent =
+                "ADD TO CART — ₹99 PRE-BOOK";
+
+            }
 
           }, 1200);
 
@@ -681,10 +1011,6 @@ const orderReferenceField =
 
       let showingBack = true;
 
-
-      /*
-        Force backside as default.
-      */
 
       const backImage =
         image.dataset.back;
@@ -744,15 +1070,10 @@ const orderReferenceField =
       function showFront() {
 
         changeImage(
-
           image.dataset.front,
-
           `${card.dataset.name || "Product"} front view`,
-
           "FRONT",
-
           false
-
         );
 
       }
@@ -761,15 +1082,10 @@ const orderReferenceField =
       function showBack() {
 
         changeImage(
-
           image.dataset.back,
-
           `${card.dataset.name || "Product"} back view`,
-
           "BACK",
-
           true
-
         );
 
       }
@@ -778,13 +1094,9 @@ const orderReferenceField =
       function toggleImage() {
 
         if (showingBack) {
-
           showFront();
-
         } else {
-
           showBack();
-
         }
 
       }
@@ -827,14 +1139,9 @@ const orderReferenceField =
       }
 
 
-      searchModal.classList.add(
-        "open"
-      );
+      searchModal.classList.add("open");
 
-
-      document.body.classList.add(
-        "no-scroll"
-      );
+      document.body.classList.add("no-scroll");
 
 
       if (searchInput) {
@@ -856,17 +1163,10 @@ const orderReferenceField =
     () => {
 
       if (searchModal) {
-
-        searchModal.classList.remove(
-          "open"
-        );
-
+        searchModal.classList.remove("open");
       }
 
-
-      document.body.classList.remove(
-        "no-scroll"
-      );
+      document.body.classList.remove("no-scroll");
 
     }
   );
@@ -877,17 +1177,11 @@ const orderReferenceField =
     "click",
     event => {
 
-      if (
-        event.target === searchModal
-      ) {
+      if (event.target === searchModal) {
 
-        searchModal.classList.remove(
-          "open"
-        );
+        searchModal.classList.remove("open");
 
-        document.body.classList.remove(
-          "no-scroll"
-        );
+        document.body.classList.remove("no-scroll");
 
       }
 
@@ -945,12 +1239,9 @@ const orderReferenceField =
           ).toLowerCase();
 
 
-        if (
-          name.includes(query)
-        ) {
+        if (name.includes(query)) {
 
           found = true;
-
 
           product.scrollIntoView({
             behavior: "smooth",
@@ -1062,18 +1353,6 @@ const orderReferenceField =
 
   /* =========================================
      CUSTOMER DETAILS → PAYMENT
-     
-     IMPORTANT FIX:
-     
-     Payment is NOT blocked by Formspree.
-     
-     If Formspree works:
-       → details are submitted
-       → payment opens
-     
-     If Formspree fails:
-       → payment still opens
-       → customer can continue
   ========================================= */
 
   on(
@@ -1095,32 +1374,14 @@ const orderReferenceField =
       }
 
 
-      const fullNameElement =
-        get("fullName");
-
-      const emailElement =
-        get("email");
-
-      const addressElement =
-        get("address");
-
-
       const fullName =
-        fullNameElement
-          ? fullNameElement.value.trim()
-          : "";
-
+        get("fullName")?.value.trim() || "";
 
       const email =
-        emailElement
-          ? emailElement.value.trim()
-          : "";
-
+        get("email")?.value.trim() || "";
 
       const address =
-        addressElement
-          ? addressElement.value.trim()
-          : "";
+        get("address")?.value.trim() || "";
 
 
       if (
@@ -1144,8 +1405,9 @@ const orderReferenceField =
 
       const orderDetails =
         cart
-          .map((item, index) =>
-            `${index + 1}. ${item.name}\n   Size: ${item.size}\n   Product Price: ₹${item.price}\n   Pre-booking Amount: ₹${item.prebook}`
+          .map(
+            (item, index) =>
+              `${index + 1}. ${item.name}\n   Size: ${item.size}\n   Product Price: ₹${item.price}\n   Pre-booking Amount: ₹${item.prebook}`
           )
           .join("\n\n");
 
@@ -1167,13 +1429,19 @@ const orderReferenceField =
           0
         );
 
-      // Create a simple reference that you can use to identify the order.
+
+      const hasFullPaymentProduct =
+        cart.some(
+          item => item.prebook === 0
+        );
+
+
       const orderReference =
         `RD-${Date.now().toString().slice(-8)}`;
 
 
       /* =====================================
-         FILL HIDDEN FORM FIELDS
+         HIDDEN FORM FIELDS
       ===================================== */
 
       const orderDetailsField =
@@ -1185,90 +1453,81 @@ const orderReferenceField =
 
 
       if (orderDetailsField) {
-
         orderDetailsField.value =
           orderDetails;
-
       }
 
 
       if (prebookAmountField) {
-
         prebookAmountField.value =
           `₹${totalPrebook}`;
-
       }
+
 
       if (orderReferenceField) {
-        orderReferenceField.value = orderReference;
-      }
-      const phoneValue = get("phone")?.value.trim() || "Not provided";
-      if (replyTo) {
-        replyTo.value = email;
-      }
-      if (emailSubject) {
-        emailSubject.value =
-          `RED DRAGON STREETWEAR — ORDER ${orderReference} — PAYMENT VERIFICATION PENDING`;
-      }
-      if (productTotalField) {
-        productTotalField.value = `₹${productTotal}`;
-      }
-      if (prebookTotalField) {
-        prebookTotalField.value = `₹${totalPrebook}`;
-      }
-      if (paymentStatusField) {
-        paymentStatusField.value = "PENDING — MANUAL PAYMENT VERIFICATION";
-      }
-      if (verificationNoteField) {
-        verificationNoteField.value =
-          "Customer has submitted the UTR. Please verify the payment manually before confirming the order.";
+        orderReferenceField.value =
+          orderReference;
       }
 
-      /* The final receipt is populated after the customer submits the UTR. */
+
+      if (replyTo) {
+        replyTo.value =
+          email;
+      }
+
+
+      if (emailSubject) {
+        emailSubject.value =
+          `RED DRAGON STREETWEAR — ORDER ${orderReference}`;
+      }
+
+
+      if (productTotalField) {
+        productTotalField.value =
+          `₹${productTotal}`;
+      }
+
+
+      if (prebookTotalField) {
+        prebookTotalField.value =
+          `₹${totalPrebook}`;
+      }
+
+
+      if (paymentStatusField) {
+        paymentStatusField.value =
+          "PENDING — MANUAL PAYMENT VERIFICATION";
+      }
 
 
       /* =====================================
-         PREPARE PAYMENT SCREEN FIRST
-         
-         This means the customer is never
-         stuck because of Formspree.
+         RESET PAYMENT METHOD
       ===================================== */
 
-      if (paymentAmount) {
+      const prepaidRadio =
+        get("paymentPrepaid");
 
-        paymentAmount.textContent =
-          `₹${totalPrebook}`;
-
+      if (prepaidRadio) {
+        prepaidRadio.checked = true;
       }
 
 
-      if (paymentProductTotal) {
-
-        paymentProductTotal.textContent =
-          `₹${productTotal}`;
-
-      }
-
+      /* =====================================
+         RESET PAYMENT FIELDS
+      ===================================== */
 
       if (paymentStatus) {
-
-        paymentStatus.textContent =
-          "";
-
+        paymentStatus.textContent = "";
       }
+
 
       if (utrInput) {
-
-        utrInput.value =
-          "";
-
+        utrInput.value = "";
       }
 
+
       if (utrTransactionId) {
-
-        utrTransactionId.value =
-          "";
-
+        utrTransactionId.value = "";
       }
 
 
@@ -1277,34 +1536,19 @@ const orderReferenceField =
       ===================================== */
 
       if (checkoutModal) {
-
-        checkoutModal.classList.remove(
-          "open"
-        );
-
+        checkoutModal.classList.remove("open");
       }
 
 
       if (paymentModal) {
-
-        paymentModal.classList.add(
-          "open"
-        );
-
+        paymentModal.classList.add("open");
       }
 
 
-      document.body.classList.add(
-        "no-scroll"
-      );
+      document.body.classList.add("no-scroll");
 
 
-      /*
-        Customer details are intentionally NOT emailed at this stage.
-        The complete order receipt is sent only after the customer
-        submits the UTR, so you receive one clean verification email
-        instead of a duplicate pre-payment email.
-      */
+      updatePaymentMethodUI();
 
     }
   );
@@ -1341,6 +1585,7 @@ const orderReferenceField =
 
         }, 1500);
 
+
       } catch {
 
         alert(
@@ -1354,7 +1599,7 @@ const orderReferenceField =
 
 
   /* =========================================
-     SUBMIT UTR / PAYMENT VERIFICATION
+     SUBMIT UTR / COD ORDER
   ========================================= */
 
   on(
@@ -1366,320 +1611,120 @@ const orderReferenceField =
         return;
       }
 
+
+      const paymentMethod =
+        getSelectedPaymentMethod();
+
+
+      /* =====================================
+         COD ORDER
+      ===================================== */
+
+      if (paymentMethod === "cod") {
+
+        await submitOrder({
+          utr: "COD",
+          paymentMethod: "COD",
+          shippingCharge: COD_SHIPPING_CHARGE
+        });
+
+        return;
+
+      }
+
+
+      /* =====================================
+         PREPAID ORDER
+      ===================================== */
+
       const utr =
         utrInput
           ? utrInput.value.trim()
           : "";
 
+
       if (!utr) {
 
         if (paymentStatus) {
+
           paymentStatus.textContent =
             "Please enter your UTR / Transaction ID after completing the payment.";
+
         }
+
 
         if (utrInput) {
           utrInput.focus();
         }
 
+
         return;
+
       }
 
-      /*
-        UTRs are normally alphanumeric. Keep validation
-        flexible because different UPI apps/banks can use
-        different transaction-ID formats.
-      */
+
       if (!/^[A-Za-z0-9._-]{6,40}$/.test(utr)) {
 
         if (paymentStatus) {
+
           paymentStatus.textContent =
             "Please enter a valid UTR / Transaction ID.";
+
         }
+
 
         if (utrInput) {
           utrInput.focus();
         }
 
+
         return;
-      }
-
-      paymentSuccess.disabled =
-        true;
-
-      paymentSuccess.textContent =
-        "SUBMITTING...";
-
-      if (paymentStatus) {
-        paymentStatus.textContent =
-          "Submitting your payment reference for verification...";
-      }
-
-      try {
-
-        if (
-          customerForm &&
-          customerForm.action &&
-          customerForm.action.includes(
-            "formspree.io"
-          )
-        ) {
-
-          if (utrTransactionId) {
-            utrTransactionId.value = utr;
-          }
-
-          if (emailSubject) {
-            emailSubject.value =
-              `RED DRAGON STREETWEAR — ORDER ${orderReferenceField ? orderReferenceField.value : ""} — UTR ${utr}`;
-          }
-
-          if (paymentStatusField) {
-            paymentStatusField.value =
-              "PENDING — MANUAL PAYMENT VERIFICATION";
-          }
-
-          if (verificationNoteField) {
-            verificationNoteField.value =
-              "UTR received. Verify the payment manually in your UPI/bank account before confirming the order.";
-          }
-
-          if (replyTo) {
-            replyTo.value = get("email")?.value.trim() || "";
-          }
-
-          if (orderReceipt) {
-            const fullName = get("fullName")?.value.trim() || "Not provided";
-            const email = get("email")?.value.trim() || "Not provided";
-            const phone = get("phone")?.value.trim() || "Not provided";
-            const address = (get("address")?.value.trim() || "Not provided").replace(/\n/g, " | ");
-            const reference = orderReferenceField?.value || "Not provided";
-            const productTotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-            const totalPrebook = cart.reduce((sum, item) => sum + (Number(item.prebook) || 0), 0);
-            const orderDetails = cart.map((item, index) =>
-              `${index + 1}. ${item.name} | Size: ${item.size} | Price: ₹${item.price} | Pre-book: ₹${item.prebook}`
-            ).join("\n");
-
-            orderReceipt.value = [
-              "=============================================",
-              "           RED DRAGON STREETWEAR",
-              "                 ORDER RECEIPT",
-              "=============================================",
-              `ORDER REFERENCE : ${reference}`,
-              `ORDER STATUS    : PENDING MANUAL VERIFICATION`,
-              "",
-              "CUSTOMER DETAILS",
-              "---------------------------------------------",
-              `Name            : ${fullName}`,
-              `Email           : ${email}`,
-              `Phone           : ${phone}`,
-              `Delivery Address: ${address}`,
-              "",
-              "ITEMS",
-              "---------------------------------------------",
-              orderDetails,
-              "",
-              "PAYMENT SUMMARY",
-              "---------------------------------------------",
-              `Product Total   : ₹${productTotal}`,
-              `Pre-booking Paid: ₹${totalPrebook}`,
-              `Balance Due     : ₹${Math.max(productTotal - totalPrebook, 0)}`,
-              "",
-              "PAYMENT VERIFICATION",
-              "---------------------------------------------",
-              `UTR / Txn ID    : ${utr}`,
-              "Payment Status  : PENDING — VERIFY MANUALLY",
-              "",
-              "ACTION REQUIRED",
-              "Check the UTR against the payment received before confirming the order.",
-              "============================================="
-            ].join("\n");
-          }
-
-          const formData = new FormData();
-
-formData.append(
-  "name",
-  get("fullName")?.value.trim() || ""
-);
-
-formData.append(
-  "email",
-  get("email")?.value.trim() || ""
-);
-
-formData.append(
-  "message",
-  `TEST ORDER - UTR: ${utr}`
-);
-
-const response = await fetch(
-  "https://formspree.io/f/xkjwpylo",
-  {
-    method: "POST",
-    body: formData,
-    headers: {
-      Accept: "application/json"
-    }
-  }
-);
-
-const result = await response.json();
-
-console.log(
-  "Formspree response:",
-  result
-);
-
-if (!response.ok) {
-  throw new Error(
-    result.error ||
-    result.errors?.map(e => e.message).join(", ") ||
-    "Formspree submission failed"
-  );
-}
-        } else {
-
-          throw new Error(
-            "No Formspree email endpoint is configured."
-          );
-
-        }
-
-        if (paymentStatus) {
-          paymentStatus.textContent =
-            "UTR submitted successfully. Your order is in progress and will be confirmed after we verify your payment.";
-        }
-
-        paymentSuccess.textContent =
-          "UTR SUBMITTED ✓";
-
-        /*
-          The payment screen closes only after the UTR has been
-          successfully submitted. The success message is explicitly
-          a pending-verification message, not a payment confirmation.
-        */
-        setTimeout(() => {
-
-          if (paymentModal) {
-            paymentModal.classList.remove(
-              "open"
-            );
-          }
-
-          if (successModal) {
-            successModal.classList.add(
-              "open"
-            );
-          }
-
-          cart = [];
-
-          updateCart();
-
-          paymentSuccess.disabled =
-            false;
-
-          paymentSuccess.textContent =
-            "SUBMIT UTR & PLACE ORDER";
-
-        }, 700);
-
-      } catch (error) {
-
-        console.error(
-          "UTR could not be submitted:",
-          error
-        );
-
-        if (paymentStatus) {
-          paymentStatus.textContent =
-            "We could not submit your UTR. Please check your internet connection and try again.";
-        }
-
-        paymentSuccess.disabled =
-          false;
-
-        paymentSuccess.textContent =
-          "SUBMIT UTR & PLACE ORDER";
 
       }
+
+
+      await submitOrder({
+        utr: utr,
+        paymentMethod: "PREPAID",
+        shippingCharge: PREPAID_SHIPPING_CHARGE
+      });
 
     }
   );
-/* =========================================
-   SUBMIT UTR / PAYMENT VERIFICATION
-========================================= */
 
-on(
-  paymentSuccess,
-  "click",
-  async () => {
 
-    if (!paymentSuccess) {
-      return;
-    }
+  /* =========================================
+     SUBMIT ORDER TO FORMSPREE
+  ========================================= */
 
-    const utr = utrInput
-      ? utrInput.value.trim()
-      : "";
-
-    /* -----------------------------------------
-       VALIDATE UTR
-    ----------------------------------------- */
-
-    if (!utr) {
-
-      if (paymentStatus) {
-        paymentStatus.textContent =
-          "Please enter your UTR / Transaction ID after completing the payment.";
-      }
-
-      if (utrInput) {
-        utrInput.focus();
-      }
-
-      return;
-    }
-
-    if (!/^[A-Za-z0-9._-]{6,40}$/.test(utr)) {
-
-      if (paymentStatus) {
-        paymentStatus.textContent =
-          "Please enter a valid UTR / Transaction ID.";
-      }
-
-      if (utrInput) {
-        utrInput.focus();
-      }
-
-      return;
-    }
-
-    /* -----------------------------------------
-       PREVENT DOUBLE SUBMISSION
-    ----------------------------------------- */
+  async function submitOrder({
+    utr,
+    paymentMethod,
+    shippingCharge
+  }) {
 
     paymentSuccess.disabled = true;
 
     paymentSuccess.textContent =
       "SUBMITTING...";
 
+
     if (paymentStatus) {
+
       paymentStatus.textContent =
-        "Submitting your payment reference...";
+        "Submitting your order...";
+
     }
 
-    try {
 
-      /* ---------------------------------------
-         CHECK FORMSPREE
-      --------------------------------------- */
+    try {
 
       if (
         !customerForm ||
         !customerForm.action ||
-        !customerForm.action.includes("formspree.io")
+        !customerForm.action.includes(
+          "formspree.io"
+        )
       ) {
 
         throw new Error(
@@ -1688,21 +1733,21 @@ on(
 
       }
 
-      /* ---------------------------------------
-         BASIC CUSTOMER DETAILS
-      --------------------------------------- */
 
       const fullName =
         get("fullName")?.value.trim() ||
         "Not provided";
 
+
       const email =
         get("email")?.value.trim() ||
         "Not provided";
 
+
       const phone =
         get("phone")?.value.trim() ||
         "Not provided";
+
 
       const address =
         (
@@ -1710,140 +1755,290 @@ on(
           "Not provided"
         ).replace(/\n/g, " | ");
 
+
       const reference =
         orderReferenceField?.value ||
         "Not provided";
 
 
-      /* ---------------------------------------
-         CALCULATE ORDER
-      --------------------------------------- */
+      /* =====================================
+         CALCULATE TOTALS
+      ===================================== */
 
       const productTotal =
         cart.reduce(
           (sum, item) =>
-            sum + (Number(item.price) || 0),
+            sum +
+            (Number(item.price) || 0),
           0
         );
+
 
       const totalPrebook =
         cart.reduce(
           (sum, item) =>
-            sum + (Number(item.prebook) || 0),
+            sum +
+            (Number(item.prebook) || 0),
           0
         );
 
 
       const balanceDue =
         Math.max(
-          productTotal - totalPrebook,
+          productTotal -
+          totalPrebook,
           0
         );
 
 
+      const hasFullPaymentProduct =
+        cart.some(
+          item => item.prebook === 0
+        );
+
+
+      let amountPaidNow = 0;
+
+
+      if (paymentMethod === "COD") {
+
+        amountPaidNow = 0;
+
+      } else if (hasFullPaymentProduct) {
+
+        amountPaidNow =
+          productTotal +
+          shippingCharge;
+
+      } else {
+
+        amountPaidNow =
+          totalPrebook;
+
+      }
+
+
+      const finalOrderTotal =
+        paymentMethod === "COD"
+          ? productTotal + shippingCharge
+          : amountPaidNow;
+
+
+      /* =====================================
+         ORDER ITEMS
+      ===================================== */
+
       const orderDetails =
         cart
           .map(
-            (item, index) =>
-              `${index + 1}. ${item.name} | Size: ${item.size} | Price: ₹${item.price} | Pre-book: ₹${item.prebook}`
+            (item, index) => {
+
+              const isFullPayment =
+                Number(item.prebook) === 0;
+
+              return (
+                `${index + 1}. ${item.name} | Size: ${item.size} | Product Price: ₹${item.price} | ` +
+                (
+                  isFullPayment
+                    ? "FULL PAYMENT PRODUCT"
+                    : `Pre-book: ₹${item.prebook} | Balance: ₹${Math.max(item.price - item.prebook, 0)}`
+                )
+              );
+
+            }
           )
           .join("\n");
 
 
-      /* ---------------------------------------
-         FILL HIDDEN FIELDS
-      --------------------------------------- */
+      /* =====================================
+         UPDATE HIDDEN FIELDS
+      ===================================== */
 
       if (utrTransactionId) {
-        utrTransactionId.value = utr;
+        utrTransactionId.value =
+          utr;
       }
 
 
       if (emailSubject) {
+
         emailSubject.value =
-          `RED DRAGON STREETWEAR — ORDER ${reference} — UTR ${utr}`;
+          `RED DRAGON STREETWEAR — ORDER ${reference} — ${paymentMethod}`;
+
       }
 
 
-      if (replyTo && email !== "Not provided") {
-        replyTo.value = email;
+      if (replyTo) {
+
+        replyTo.value =
+          email !== "Not provided"
+            ? email
+            : "";
+
       }
 
 
       if (paymentStatusField) {
+
         paymentStatusField.value =
-          "PENDING — MANUAL PAYMENT VERIFICATION";
+          paymentMethod === "COD"
+            ? "COD ORDER — PAYMENT ON DELIVERY"
+            : "PENDING — MANUAL PAYMENT VERIFICATION";
+
       }
 
 
       if (productTotalField) {
+
         productTotalField.value =
           `₹${productTotal}`;
+
       }
 
 
       if (prebookTotalField) {
+
         prebookTotalField.value =
           `₹${totalPrebook}`;
+
       }
 
 
       if (verificationNoteField) {
+
         verificationNoteField.value =
-          "UTR received. Verify the payment manually in the UPI/bank account before confirming the order.";
+          paymentMethod === "COD"
+            ? `COD order. ₹${COD_SHIPPING_CHARGE} COD shipping charges applicable. Collect payment on delivery.`
+            : "UTR received. Verify the payment manually in the UPI/bank account before confirming the order.";
+
       }
 
 
-      /* ---------------------------------------
-         CREATE CLEAN ORDER RECEIPT
-      --------------------------------------- */
+      /* =====================================
+         CREATE CLEAN RECEIPT
+      ===================================== */
 
       if (orderReceipt) {
 
         orderReceipt.value = [
+
           "=============================================",
           "           RED DRAGON STREETWEAR",
           "                 ORDER RECEIPT",
           "=============================================",
+
           `ORDER REFERENCE : ${reference}`,
-          `ORDER STATUS    : PENDING MANUAL VERIFICATION`,
+
+          `ORDER STATUS    : ${
+            paymentMethod === "COD"
+              ? "COD ORDER — PAYMENT ON DELIVERY"
+              : "PENDING MANUAL VERIFICATION"
+          }`,
+
           "",
+
           "CUSTOMER DETAILS",
           "---------------------------------------------",
+
           `Name            : ${fullName}`,
           `Email           : ${email}`,
           `Phone           : ${phone}`,
           `Delivery Address: ${address}`,
+
           "",
+
           "ITEMS",
           "---------------------------------------------",
+
           orderDetails,
+
           "",
+
           "PAYMENT SUMMARY",
           "---------------------------------------------",
+
           `Product Total   : ₹${productTotal}`,
+
           `Pre-booking Paid: ₹${totalPrebook}`,
+
           `Balance Due     : ₹${balanceDue}`,
+
+          `Payment Method  : ${paymentMethod}`,
+
+          `Shipping Charge : ₹${shippingCharge}`,
+
+          `Amount Paid Now : ₹${amountPaidNow}`,
+
+          `Final Order Total: ₹${finalOrderTotal}`,
+
           "",
+
           "PAYMENT VERIFICATION",
           "---------------------------------------------",
+
           `UTR / Txn ID    : ${utr}`,
-          "Payment Status  : PENDING — VERIFY MANUALLY",
+
+          `Payment Status  : ${
+            paymentMethod === "COD"
+              ? "COD — PAYMENT TO BE COLLECTED ON DELIVERY"
+              : "PENDING — VERIFY MANUALLY"
+          }`,
+
           "",
+
           "ACTION REQUIRED",
-          "Check the UTR against the payment received before confirming the order.",
+
+          paymentMethod === "COD"
+            ? `Dispatch COD order. Collect ₹${finalOrderTotal} from customer on delivery.`
+            : "Check the UTR against the payment received before confirming the order.",
+
           "============================================="
+
         ].join("\n");
 
       }
 
 
-      /* ---------------------------------------
-         SEND TO FORMSPREE
-      --------------------------------------- */
+      /* =====================================
+         SEND FORM TO FORMSPREE
+      ===================================== */
 
       const formData =
         new FormData(customerForm);
+
+
+      /*
+        Add additional explicit fields.
+      */
+
+      formData.set(
+        "paymentMethod",
+        paymentMethod
+      );
+
+
+      formData.set(
+        "shippingCharge",
+        `₹${shippingCharge}`
+      );
+
+
+      formData.set(
+        "amountPaidNow",
+        `₹${amountPaidNow}`
+      );
+
+
+      formData.set(
+        "finalOrderTotal",
+        `₹${finalOrderTotal}`
+      );
+
+
+      formData.set(
+        "utrTransactionId",
+        utr
+      );
 
 
       const response =
@@ -1859,19 +2054,17 @@ on(
         );
 
 
-      /* ---------------------------------------
-         CHECK RESPONSE
-      --------------------------------------- */
-
       if (!response.ok) {
 
         let errorMessage =
           `Form submission failed (${response.status}).`;
 
+
         try {
 
           const result =
             await response.json();
+
 
           if (
             result &&
@@ -1881,7 +2074,10 @@ on(
 
             errorMessage =
               result.errors
-                .map(error => error.message)
+                .map(
+                  error =>
+                    error.message
+                )
                 .join(" ");
 
           }
@@ -1890,6 +2086,7 @@ on(
           // Response was not JSON.
         }
 
+
         throw new Error(
           errorMessage
         );
@@ -1897,33 +2094,43 @@ on(
       }
 
 
-      /* ---------------------------------------
+      /* =====================================
          SUCCESS
-      --------------------------------------- */
+      ===================================== */
 
       if (paymentStatus) {
+
         paymentStatus.textContent =
-          "UTR submitted successfully. Your order is now pending payment verification.";
+          paymentMethod === "COD"
+            ? "COD order submitted successfully. Your order is now in progress."
+            : "UTR submitted successfully. Your order is now pending payment verification.";
+
       }
 
 
       paymentSuccess.textContent =
-        "UTR SUBMITTED ✓";
+        paymentMethod === "COD"
+          ? "COD ORDER SUBMITTED ✓"
+          : "UTR SUBMITTED ✓";
 
 
       setTimeout(() => {
 
         if (paymentModal) {
+
           paymentModal.classList.remove(
             "open"
           );
+
         }
 
 
         if (successModal) {
+
           successModal.classList.add(
             "open"
           );
+
         }
 
 
@@ -1935,15 +2142,18 @@ on(
         paymentSuccess.disabled =
           false;
 
+
         paymentSuccess.textContent =
           "SUBMIT UTR & PLACE ORDER";
 
+
       }, 1000);
+
 
     } catch (error) {
 
       console.error(
-        "UTR submission error:",
+        "Order submission error:",
         error
       );
 
@@ -1952,7 +2162,7 @@ on(
 
         paymentStatus.textContent =
           error.message ||
-          "Unable to submit your UTR. Please try again.";
+          "Unable to submit your order. Please try again.";
 
       }
 
@@ -1960,13 +2170,72 @@ on(
       paymentSuccess.disabled =
         false;
 
+
       paymentSuccess.textContent =
-        "SUBMIT UTR & PLACE ORDER";
+        getSelectedPaymentMethod() === "cod"
+          ? "PLACE COD ORDER"
+          : "SUBMIT UTR & PLACE ORDER";
 
     }
 
   }
-);
+
+
+  /* =========================================
+     CLOSE PAYMENT
+  ========================================= */
+
+  on(
+    closePayment,
+    "click",
+    () => {
+
+      if (paymentModal) {
+
+        paymentModal.classList.remove(
+          "open"
+        );
+
+      }
+
+
+      document.body.classList.remove(
+        "no-scroll"
+      );
+
+    }
+  );
+
+
+  /* =========================================
+     SUCCESS MODAL
+  ========================================= */
+
+  on(
+    closeSuccess,
+    "click",
+    () => {
+
+      if (successModal) {
+
+        successModal.classList.remove(
+          "open"
+        );
+
+      }
+
+
+      document.body.classList.remove(
+        "no-scroll"
+      );
+
+
+      scrollToSection(
+        "collection"
+      );
+
+    }
+  );
 
 
   /* =========================================
