@@ -193,7 +193,7 @@ const orderReferenceField =
     } catch (error) {
 
       console.warn(
-        "Could not update URL hash.",
+        "Could not  URL hash.",
         error
       );
 
@@ -253,88 +253,126 @@ const orderReferenceField =
   let cart = [];
 
 
-  function updateCart() {
+ function updateCart() {
 
-    if (
-      !cartItems ||
-      !cartCount ||
-      !cartTotal
-    ) {
-      return;
-    }
+  if (
+    !cartItems ||
+    !cartCount ||
+    !cartTotal
+  ) {
+    return;
+  }
 
+  cartItems.innerHTML = "";
 
-    cartItems.innerHTML = "";
+  if (cart.length === 0) {
 
+    cartItems.innerHTML =
+      "<p>Your cart is empty.</p>";
 
-    if (cart.length === 0) {
+    cartCount.textContent = "";
 
-      cartItems.innerHTML =
-        "<p>Your cart is empty.</p>";
+    cartTotal.textContent = "₹0";
 
-      cartCount.textContent = "";
+    return;
+  }
 
-      cartTotal.textContent = "₹0";
+  let paymentTotal = 0;
 
-      return;
+  cart.forEach((item, index) => {
 
-    }
+    paymentTotal +=
+      Number(item.prebook) || 0;
 
+    const isFullPayment =
+      item.paymentType === "full";
 
-    let prebookTotal = 0;
+    const itemElement =
+      document.createElement("div");
 
+    itemElement.className =
+      "cart-product";
 
-    cart.forEach((item, index) => {
+    itemElement.innerHTML = `
 
-      prebookTotal +=
-        Number(item.prebook) || 0;
+      <div class="cart-product-top">
 
+        <div>
 
-      const itemElement =
-        document.createElement("div");
+          <strong>
+            ${escapeHtml(item.name)}
+          </strong>
 
+          <small>
+            Size: ${escapeHtml(item.size)}
+          </small>
 
-      itemElement.className =
-        "cart-product";
+          <small>
+            Product Price:
+            ₹${Number(item.price) || 0}
+          </small>
 
-
-      itemElement.innerHTML = `
-
-        <div class="cart-product-top">
-
-          <div>
-
-            <strong>
-              ${escapeHtml(item.name)}
-            </strong>
-
-            <small>
-              Size: ${escapeHtml(item.size)}
-            </small>
-
-            <small>
-              Actual price:
-              ₹${Number(item.price) || 0}
-            </small>
-
-            <small>
-              Pre-book:
-              ₹${Number(item.prebook) || 0}
-            </small>
-
-          </div>
-
-          <button
-            class="remove-item"
-            type="button"
-            data-index="${index}"
-          >
-            REMOVE
-          </button>
+          <small>
+            ${
+              isFullPayment
+                ? "Payment: Full Price ₹" + (Number(item.price) || 0)
+                : "Pre-booking: ₹" + (Number(item.prebook) || 0)
+            }
+          </small>
 
         </div>
 
-      `;
+        <button
+          class="remove-item"
+          type="button"
+          data-index="${index}"
+        >
+          REMOVE
+        </button>
+
+      </div>
+
+    `;
+
+    cartItems.appendChild(itemElement);
+
+  });
+
+  cartCount.textContent =
+    cart.length;
+
+  cartTotal.textContent =
+    `₹${paymentTotal}`;
+
+  cartItems
+    .querySelectorAll(".remove-item")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const index =
+            Number(button.dataset.index);
+
+          if (
+            Number.isInteger(index) &&
+            index >= 0 &&
+            index < cart.length
+          ) {
+
+            cart.splice(index, 1);
+
+            updateCart();
+
+          }
+
+        }
+      );
+
+    });
+
+}
 
 
       cartItems.appendChild(
@@ -547,26 +585,30 @@ const orderReferenceField =
 
           const product = {
 
-            id:
-              card.dataset.productId || "",
+  id:
+    card.dataset.productId || "",
 
-            name:
-              card.dataset.name ||
-              "Product",
+  name:
+    card.dataset.name ||
+    "Product",
 
-            price:
-              Number(card.dataset.price) ||
-              399,
+  price:
+    Number(card.dataset.price) ||
+    399,
 
-            prebook:
-              Number(card.dataset.prebook) ||
-              99,
+  prebook:
+    Number(card.dataset.prebook) ||
+    99,
 
-            size:
-              selectedSize.dataset.size ||
-              ""
+  paymentType:
+    card.dataset.paymentType ||
+    "prebook",
 
-          };
+  size:
+    selectedSize.dataset.size ||
+    ""
+
+};
 
 
           cart.push(product);
@@ -584,7 +626,9 @@ const orderReferenceField =
           setTimeout(() => {
 
             button.textContent =
-              "ADD TO CART — ₹99 PRE-BOOK";
+  product.paymentType === "full"
+    ? "ADD TO CART — ₹499"
+    : "ADD TO CART — ₹99 PRE-BOOK";
 
           }, 1200);
 
