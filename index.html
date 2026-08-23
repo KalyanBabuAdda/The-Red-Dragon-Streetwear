@@ -1036,19 +1036,17 @@
     </button>
 
 
-    <p class="eyebrow">
-      PRE-BOOK YOUR PIECE
-    </p>
+    <p class="eyebrow" id="checkoutEyebrow">
+  SECURE YOUR ORDER
+</p>
 
-    <h2 id="checkoutTitle">
-      CUSTOMER DETAILS
-    </h2>
+<h2 id="checkoutTitle">
+  CUSTOMER DETAILS
+</h2>
 
-
-    <p class="checkout-intro">
-      Enter your details to continue with the ₹99 pre-booking.
-    </p>
-
+<p class="checkout-intro" id="checkoutIntro">
+  Enter your details to continue.
+</p>
 
     <!--
       Formspree endpoint.
@@ -1212,9 +1210,62 @@
     </p>
 
     <h2 id="paymentTitle">
-      PRE-BOOK PAYMENT
+  PAYMENT
     </h2>
 
+    <!-- PRODUCT 3 PAYMENT METHOD -->
+
+<div
+  class="payment-method-section"
+  id="paymentMethodSection"
+  style="display:none;"
+>
+
+  <h3>
+    CHOOSE PAYMENT METHOD
+  </h3>
+
+  <div class="payment-method-options">
+
+    <label class="payment-method-option">
+
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="prepaid"
+        checked
+      >
+
+      <span>
+        <strong>PREPAID</strong>
+        <small>
+          Pay ₹499 online
+        </small>
+      </span>
+
+    </label>
+
+
+    <label class="payment-method-option">
+
+      <input
+        type="radio"
+        name="paymentMethod"
+        value="cod"
+      >
+
+      <span>
+        <strong>COD — CASH ON DELIVERY</strong>
+        <small>
+          Shipping/COD charges applicable
+        </small>
+      </span>
+
+    </label>
+
+  </div>
+
+</div>
 
     <div class="payment-amount">
 
@@ -1231,40 +1282,54 @@
 
     <div class="payment-product-summary">
 
-      <p>
-        <span>
-          PRODUCT TOTAL
-        </span>
+  <p>
+    <span>
+      PRODUCT TOTAL
+    </span>
 
-        <strong id="paymentProductTotal">
-          ₹399
-        </strong>
-      </p>
+    <strong id="paymentProductTotal">
+      ₹399
+    </strong>
+  </p>
 
-      <p>
-        <span>
-          PRE-BOOK PAID NOW
-        </span>
+  <p id="paymentPrebookRow">
+    <span>
+      PRE-BOOK / PAYMENT NOW
+    </span>
 
-        <strong id="paymentPrebookTotal">
-          ₹99
-        </strong>
-      </p>
+    <strong id="paymentPrebookTotal">
+      ₹99
+    </strong>
+  </p>
 
-      <p class="payment-balance">
+  <p
+    class="payment-balance"
+    id="paymentBalanceRow"
+  >
 
-        <span>
-          BALANCE AFTER PRE-BOOK
-        </span>
+    <span>
+      BALANCE DUE
+    </span>
 
-        <strong id="paymentBalance">
-          ₹300
-        </strong>
+    <strong id="paymentBalance">
+      ₹300
+    </strong>
 
-      </p>
+  </p>
 
-    </div>
+  <p id="paymentShippingRow" style="display:none;">
 
+    <span>
+      SHIPPING / COD CHARGES
+    </span>
+
+    <strong id="paymentShipping">
+      Applicable
+    </strong>
+
+  </p>
+
+</div>
 
     <div class="upi-box">
 
