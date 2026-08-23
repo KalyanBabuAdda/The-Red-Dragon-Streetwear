@@ -1,6 +1,6 @@
 /* =========================================
    THE RED DRAGON STREETWEAR
-   COMPLETE JAVASCRIPT
+   COMPLETE SCRIPT.JS
    PRODUCT 1 & 2 = ₹99 PRE-BOOK
    PRODUCT 3 = FULL PRICE + PREPAID / COD
 ========================================= */
@@ -9,26 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   "use strict";
 
-
-  /* =========================================
-     CONFIGURATION
-  ========================================= */
-
-  // Change this number if your COD shipping charge is different.
-  const COD_SHIPPING_CHARGE = 40;
-
-  // Prepaid shipping charge.
-  // Change to your actual prepaid shipping charge if applicable.
-  const PREPAID_SHIPPING_CHARGE = 0;
-
-
   /* =========================================
      HELPERS
   ========================================= */
 
-  const get = (id) =>
-    document.getElementById(id);
-
+  const get = (id) => document.getElementById(id);
 
   const on = (element, event, handler) => {
     if (element) {
@@ -36,17 +21,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-
   const escapeHtml = (value) => {
-
     return String(value)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-
   };
+
+
+  /* =========================================
+     PRODUCT 3 SHIPPING SETTINGS
+     
+     CHANGE THESE VALUES IF REQUIRED
+  ========================================= */
+
+  const PRODUCT_3_PREPAID_SHIPPING = 0;
+
+  const PRODUCT_3_COD_SHIPPING = 80;
 
 
   /* =========================================
@@ -106,488 +99,108 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     PAYMENT METHOD UI
-     
-     We create the payment-method selector
-     dynamically so you don't have to manually
-     edit the HTML payment section.
-  ========================================= */
-
-  function createPaymentMethodSelector() {
-
-    if (!paymentModal) {
-      return;
-    }
-
-    // Don't create twice.
-    if (get("paymentMethodSection")) {
-      return;
-    }
-
-    const paymentBox =
-      paymentModal.querySelector(".payment-box");
-
-    if (!paymentBox) {
-      return;
-    }
-
-    const section =
-      document.createElement("div");
-
-    section.id = "paymentMethodSection";
-
-    section.style.marginTop = "20px";
-    section.style.marginBottom = "20px";
-    section.style.padding = "16px";
-    section.style.border = "1px solid rgba(255,255,255,0.15)";
-    section.style.borderRadius = "10px";
-
-    section.innerHTML = `
-
-      <div style="
-        font-size:12px;
-        letter-spacing:1px;
-        font-weight:700;
-        margin-bottom:12px;
-      ">
-        PAYMENT METHOD
-      </div>
-
-      <div style="
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-      ">
-
-        <label style="
-          flex:1;
-          min-width:130px;
-          cursor:pointer;
-        ">
-
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="prepaid"
-            id="paymentPrepaid"
-            checked
-          >
-
-          <span style="
-            display:block;
-            padding:12px;
-            border:1px solid rgba(255,255,255,0.2);
-            border-radius:8px;
-            margin-top:5px;
-          ">
-            PREPAID
-            <small style="
-              display:block;
-              margin-top:5px;
-              opacity:.7;
-            ">
-              Pay online
-            </small>
-          </span>
-
-        </label>
-
-
-        <label style="
-          flex:1;
-          min-width:130px;
-          cursor:pointer;
-        ">
-
-          <input
-            type="radio"
-            name="paymentMethod"
-            value="cod"
-            id="paymentCOD"
-          >
-
-          <span style="
-            display:block;
-            padding:12px;
-            border:1px solid rgba(255,255,255,0.2);
-            border-radius:8px;
-            margin-top:5px;
-          ">
-            COD
-            <small style="
-              display:block;
-              margin-top:5px;
-              opacity:.7;
-            ">
-              ₹${COD_SHIPPING_CHARGE} shipping applicable
-            </small>
-          </span>
-
-        </label>
-
-      </div>
-
-      <div
-        id="shippingChargeDisplay"
-        style="
-          margin-top:12px;
-          font-size:13px;
-          opacity:.8;
-        "
-      ></div>
-
-    `;
-
-    const utrSection =
-      paymentBox.querySelector(".utr-section");
-
-    if (utrSection) {
-      paymentBox.insertBefore(
-        section,
-        utrSection
-      );
-    } else {
-      paymentBox.appendChild(section);
-    }
-
-
-    const prepaidRadio =
-      get("paymentPrepaid");
-
-    const codRadio =
-      get("paymentCOD");
-
-
-    on(
-      prepaidRadio,
-      "change",
-      updatePaymentMethodUI
-    );
-
-    on(
-      codRadio,
-      "change",
-      updatePaymentMethodUI
-    );
-
-  }
-
-
-  function getSelectedPaymentMethod() {
-
-    const selected =
-      document.querySelector(
-        'input[name="paymentMethod"]:checked'
-      );
-
-    return selected
-      ? selected.value
-      : "prepaid";
-
-  }
-
-
-  function updatePaymentMethodUI() {
-
-    if (!cart.length) {
-      return;
-    }
-
-    const method =
-      getSelectedPaymentMethod();
-
-    const productTotal =
-      cart.reduce(
-        (sum, item) =>
-          sum + (Number(item.price) || 0),
-        0
-      );
-
-    const prebookTotal =
-      cart.reduce(
-        (sum, item) =>
-          sum + (Number(item.prebook) || 0),
-        0
-      );
-
-    /*
-      Product 3 is a full-payment product.
-      Product 1 & 2 are pre-book products.
-    */
-
-    const hasFullPaymentProduct =
-      cart.some(
-        item => item.prebook === 0
-      );
-
-    let shipping = 0;
-
-    if (hasFullPaymentProduct) {
-
-      if (method === "cod") {
-        shipping = COD_SHIPPING_CHARGE;
-      } else {
-        shipping = PREPAID_SHIPPING_CHARGE;
-      }
-
-    }
-
-
-    const amountDue =
-      hasFullPaymentProduct
-        ? productTotal + shipping
-        : prebookTotal;
-
-
-    if (paymentAmount) {
-      paymentAmount.textContent =
-        `₹${amountDue}`;
-    }
-
-
-    if (paymentProductTotal) {
-      paymentProductTotal.textContent =
-        `₹${productTotal}`;
-    }
-
-
-    if (paymentPrebookTotal) {
-
-      if (hasFullPaymentProduct) {
-
-        paymentPrebookTotal.textContent =
-          "₹0";
-
-      } else {
-
-        paymentPrebookTotal.textContent =
-          `₹${prebookTotal}`;
-
-      }
-
-    }
-
-
-    if (paymentBalance) {
-
-      const balance =
-        Math.max(
-          productTotal - prebookTotal,
-          0
-        );
-
-      paymentBalance.textContent =
-        `₹${balance}`;
-
-    }
-
-
-    const shippingDisplay =
-      get("shippingChargeDisplay");
-
-    if (shippingDisplay) {
-
-      if (hasFullPaymentProduct) {
-
-        shippingDisplay.textContent =
-          method === "cod"
-            ? `COD SHIPPING CHARGE: ₹${COD_SHIPPING_CHARGE}`
-            : `PREPAID SHIPPING CHARGE: ₹${PREPAID_SHIPPING_CHARGE}`;
-
-      } else {
-
-        shippingDisplay.textContent =
-          "Shipping charges will be applicable at dispatch.";
-
-      }
-
-    }
-
-
-    /*
-      COD does not require UTR.
-      Prepaid requires UTR.
-    */
-
-    const utrSection =
-      paymentModal?.querySelector(".utr-section");
-
-    const paymentInstruction =
-      paymentModal?.querySelector(".payment-instruction");
-
-    const upiBox =
-      paymentModal?.querySelector(".upi-box");
-
-    const qrBox =
-      paymentModal?.querySelector(".qr-placeholder");
-
-
-    if (method === "cod") {
-
-      if (utrSection) {
-        utrSection.style.display = "none";
-      }
-
-      if (upiBox) {
-        upiBox.style.display = "none";
-      }
-
-      if (qrBox) {
-        qrBox.style.display = "none";
-      }
-
-      if (paymentInstruction) {
-
-        paymentInstruction.textContent =
-          `You selected Cash On Delivery. ₹${COD_SHIPPING_CHARGE} COD shipping charges are applicable. You do not need to make an online payment or submit a UTR.`;
-
-      }
-
-      if (paymentSuccess) {
-
-        paymentSuccess.textContent =
-          "PLACE COD ORDER";
-
-      }
-
-    } else {
-
-      if (utrSection) {
-        utrSection.style.display = "";
-      }
-
-      if (upiBox) {
-        upiBox.style.display = "";
-      }
-
-      if (qrBox) {
-        qrBox.style.display = "";
-      }
-
-      if (paymentInstruction) {
-
-        if (hasFullPaymentProduct) {
-
-          paymentInstruction.textContent =
-            `Pay ₹${amountDue} using UPI. After the payment is successful, enter your UTR / Transaction ID below.`;
-
-        } else {
-
-          paymentInstruction.textContent =
-            `Send the ₹${prebookTotal} pre-booking amount using UPI. After the payment is successful, enter your UTR / Transaction ID below.`;
-
-        }
-
-      }
-
-      if (paymentSuccess) {
-
-        paymentSuccess.textContent =
-          "SUBMIT UTR & PLACE ORDER";
-
-      }
-
-    }
-
-  }
-
-
-  createPaymentMethodSelector();
-
-
-  /* =========================================
-     NAVIGATION
-  ========================================= */
-
-  function scrollToSection(id) {
-
-    const section =
-      document.getElementById(id);
-
-    if (!section) {
-      return;
-    }
-
-    section.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-
-    try {
-
-      history.replaceState(
-        null,
-        "",
-        `#${id}`
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "Could not update URL hash.",
-        error
-      );
-
-    }
-
-  }
-
-
-  document
-    .querySelectorAll('a[href^="#"]')
-    .forEach(link => {
-
-      link.addEventListener(
-        "click",
-        event => {
-
-          const href =
-            link.getAttribute("href");
-
-          if (!href) {
-            return;
-          }
-
-          const targetId =
-            href.substring(1);
-
-          if (!targetId) {
-            return;
-          }
-
-          const target =
-            document.getElementById(
-              targetId
-            );
-
-          if (!target) {
-            return;
-          }
-
-          event.preventDefault();
-
-          scrollToSection(targetId);
-
-        }
-      );
-
-    });
-
-
-  /* =========================================
      CART
   ========================================= */
 
   let cart = [];
 
+  /*
+    Stores the payment method for Product 3.
+
+    Product 1 & 2 don't need this because
+    they always use the ₹99 pre-book system.
+  */
+
+  let product3PaymentMethod = "prepaid";
+
+
+  /* =========================================
+     PRODUCT HELPERS
+  ========================================= */
+
+  function isProduct3(item) {
+    return item.id === "vintage";
+  }
+
+
+  function getProductPaymentAmount(item) {
+
+    /*
+      Product 1 & Product 2:
+      Customer pays only ₹99 now.
+    */
+
+    if (!isProduct3(item)) {
+      return Number(item.prebook) || 99;
+    }
+
+
+    /*
+      Product 3:
+      Full ₹499 is paid for Prepaid.
+    */
+
+    if (item.paymentMethod === "prepaid") {
+      return (
+        (Number(item.price) || 499) +
+        (Number(item.shipping) || 0)
+      );
+    }
+
+
+    /*
+      Product 3:
+      COD = full product price + COD shipping.
+    */
+
+    if (item.paymentMethod === "cod") {
+      return (
+        (Number(item.price) || 499) +
+        (Number(item.shipping) || PRODUCT_3_COD_SHIPPING)
+      );
+    }
+
+
+    return Number(item.price) || 499;
+  }
+
+
+  function getProductShipping(item) {
+
+    if (!isProduct3(item)) {
+      return 0;
+    }
+
+    if (item.paymentMethod === "cod") {
+      return Number(item.shipping) || PRODUCT_3_COD_SHIPPING;
+    }
+
+    return PRODUCT_3_PREPAID_SHIPPING;
+  }
+
+
+  /* =========================================
+     CART TOTAL
+  ========================================= */
+
+  function calculateCartPaymentTotal() {
+
+    return cart.reduce((total, item) => {
+
+      return total + getProductPaymentAmount(item);
+
+    }, 0);
+
+  }
+
+
+  /* =========================================
+     UPDATE CART
+  ========================================= */
 
   function updateCart() {
 
-    if (
-      !cartItems ||
-      !cartCount ||
-      !cartTotal
-    ) {
+    if (!cartItems || !cartCount || !cartTotal) {
       return;
     }
 
@@ -605,27 +218,23 @@ document.addEventListener("DOMContentLoaded", () => {
       cartTotal.textContent = "₹0";
 
       return;
-
     }
 
 
-    let cartPayableTotal = 0;
+    let total = 0;
 
 
     cart.forEach((item, index) => {
 
-      const isFullPayment =
-        Number(item.prebook) === 0;
+      const paymentAmountForItem =
+        getProductPaymentAmount(item);
 
 
-      const amountShown =
-        isFullPayment
-          ? Number(item.price)
-          : Number(item.prebook);
+      const shipping =
+        getProductShipping(item);
 
 
-      cartPayableTotal +=
-        amountShown;
+      total += paymentAmountForItem;
 
 
       const itemElement =
@@ -634,6 +243,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
       itemElement.className =
         "cart-product";
+
+
+      let paymentInfo = "";
+
+
+      if (isProduct3(item)) {
+
+        paymentInfo = `
+
+          <small>
+            Payment:
+            ${item.paymentMethod === "cod"
+              ? "COD"
+              : "PREPAID"}
+          </small>
+
+          <small>
+            Shipping:
+            ${shipping === 0
+              ? "FREE"
+              : "₹" + shipping}
+          </small>
+
+        `;
+
+      } else {
+
+        paymentInfo = `
+
+          <small>
+            Pre-book:
+            ₹${Number(item.prebook) || 99}
+          </small>
+
+          <small>
+            Balance on delivery:
+            ₹${Math.max(
+              (Number(item.price) || 0) -
+              (Number(item.prebook) || 0),
+              0
+            )}
+          </small>
+
+        `;
+
+      }
 
 
       itemElement.innerHTML = `
@@ -651,39 +306,16 @@ document.addEventListener("DOMContentLoaded", () => {
             </small>
 
             <small>
-              Actual price:
+              Product Price:
               ₹${Number(item.price) || 0}
             </small>
 
-            ${
-              isFullPayment
-                ? `
-                  <small>
-                    Payment:
-                    FULL PRICE
-                  </small>
+            ${paymentInfo}
 
-                  <small>
-                    Shipping:
-                    PREPAID / COD APPLICABLE
-                  </small>
-                `
-                : `
-                  <small>
-                    Pre-book:
-                    ₹${Number(item.prebook) || 0}
-                  </small>
-
-                  <small>
-                    Balance on delivery:
-                    ₹${Math.max(
-                      Number(item.price) -
-                      Number(item.prebook),
-                      0
-                    )}
-                  </small>
-                `
-            }
+            <strong>
+              Pay Now:
+              ₹${paymentAmountForItem}
+            </strong>
 
           </div>
 
@@ -700,27 +332,17 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
 
-      cartItems.appendChild(
-        itemElement
-      );
+      cartItems.appendChild(itemElement);
 
     });
 
 
-    /*
-      If Product 3 is present, cart total is
-      its actual price.
-
-      Product 1 & 2 continue showing their
-      ₹99 pre-book amount.
-    */
-
-    cartTotal.textContent =
-      `₹${cartPayableTotal}`;
-
-
     cartCount.textContent =
       cart.length;
+
+
+    cartTotal.textContent =
+      `₹${total}`;
 
 
     cartItems
@@ -733,6 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const index =
               Number(button.dataset.index);
+
 
             if (
               Number.isInteger(index) &&
@@ -755,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     OPEN / CLOSE CART
+     OPEN CART
   ========================================= */
 
   function openCart() {
@@ -764,16 +387,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     cartDrawer.classList.add("open");
+
 
     if (overlay) {
       overlay.classList.add("active");
     }
 
+
     document.body.classList.add("no-scroll");
 
   }
 
+
+  /* =========================================
+     CLOSE CART
+  ========================================= */
 
   function closeCartDrawer() {
 
@@ -781,9 +411,11 @@ document.addEventListener("DOMContentLoaded", () => {
       cartDrawer.classList.remove("open");
     }
 
+
     if (overlay) {
       overlay.classList.remove("active");
     }
+
 
     document.body.classList.remove("no-scroll");
 
@@ -820,9 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach(card => {
 
       const sizeButtons =
-        card.querySelectorAll(
-          ".sizes button"
-        );
+        card.querySelectorAll(".sizes button");
 
 
       sizeButtons.forEach(button => {
@@ -833,15 +463,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             sizeButtons.forEach(btn => {
 
-              btn.classList.remove(
-                "selected"
-              );
+              btn.classList.remove("selected");
 
             });
 
-            button.classList.add(
-              "selected"
-            );
+
+            button.classList.add("selected");
 
           }
         );
@@ -849,6 +476,55 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     });
+
+
+  /* =========================================
+     PRODUCT 3 PAYMENT METHOD
+     
+     We add the choice when Product 3
+     is added to cart.
+  ========================================= */
+
+  function askProduct3PaymentMethod() {
+
+    const choice =
+      window.prompt(
+        "RED DRAGON VINTAGE\n\n" +
+        "Choose payment method:\n\n" +
+        "1 = PREPAID\n" +
+        "2 = COD (Cash On Delivery)\n\n" +
+        "Enter 1 or 2:"
+      );
+
+
+    if (choice === "1") {
+
+      return {
+        method: "prepaid",
+        shipping: PRODUCT_3_PREPAID_SHIPPING
+      };
+
+    }
+
+
+    if (choice === "2") {
+
+      return {
+        method: "cod",
+        shipping: PRODUCT_3_COD_SHIPPING
+      };
+
+    }
+
+
+    alert(
+      "Please select either Prepaid or COD."
+    );
+
+
+    return null;
+
+  }
 
 
   /* =========================================
@@ -864,9 +540,7 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
           const card =
-            button.closest(
-              ".product-card"
-            );
+            button.closest(".product-card");
 
 
           if (!card) {
@@ -887,7 +561,6 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             return;
-
           }
 
 
@@ -895,44 +568,66 @@ document.addEventListener("DOMContentLoaded", () => {
             card.dataset.productId || "";
 
 
-          /*
-            PRODUCT 3 / VINTAGE
-            --------------------------------
-            No ₹99 pre-book.
-            Customer pays actual price.
-          */
+          const price =
+            Number(card.dataset.price) || 399;
 
-          const isProduct3 =
-            productId === "vintage";
+
+          const prebook =
+            Number(card.dataset.prebook) || 99;
 
 
           const product = {
 
-            id:
-              productId,
+            id: productId,
 
             name:
               card.dataset.name ||
               "Product",
 
-            price:
-              Number(card.dataset.price) ||
-              399,
+            price: price,
 
-            prebook:
-              isProduct3
-                ? 0
-                : (
-                    Number(card.dataset.prebook) ||
-                    99
-                  ),
+            prebook: prebook,
 
             size:
               selectedSize.dataset.size ||
-              ""
+              "",
+
+            paymentMethod:
+              null,
+
+            shipping: 0
 
           };
 
+
+          /* =====================================
+             PRODUCT 3
+          ===================================== */
+
+          if (productId === "vintage") {
+
+            const paymentChoice =
+              askProduct3PaymentMethod();
+
+
+            if (!paymentChoice) {
+              return;
+            }
+
+
+            product.paymentMethod =
+              paymentChoice.method;
+
+
+            product.shipping =
+              paymentChoice.shipping;
+
+          }
+
+
+          /* =====================================
+             ADD PRODUCT
+          ===================================== */
 
           cart.push(product);
 
@@ -948,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           setTimeout(() => {
 
-            if (isProduct3) {
+            if (productId === "vintage") {
 
               button.textContent =
                 "ADD TO CART — ₹499";
@@ -970,8 +665,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* =========================================
      PRODUCT IMAGE GALLERY
-     
-     BACKSIDE IS DEFAULT
   ========================================= */
 
   document
@@ -979,24 +672,16 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach(card => {
 
       const image =
-        card.querySelector(
-          ".product-image"
-        );
+        card.querySelector(".product-image");
 
       const previous =
-        card.querySelector(
-          ".gallery-prev"
-        );
+        card.querySelector(".gallery-prev");
 
       const next =
-        card.querySelector(
-          ".gallery-next"
-        );
+        card.querySelector(".gallery-next");
 
       const label =
-        card.querySelector(
-          ".image-label"
-        );
+        card.querySelector(".image-label");
 
 
       if (
@@ -1042,8 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        image.style.opacity =
-          "0";
+        image.style.opacity = "0";
 
 
         setTimeout(() => {
@@ -1055,8 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
           label.textContent =
             labelText;
 
-          image.style.opacity =
-            "1";
+          image.style.opacity = "1";
 
         }, 100);
 
@@ -1070,10 +753,15 @@ document.addEventListener("DOMContentLoaded", () => {
       function showFront() {
 
         changeImage(
+
           image.dataset.front,
+
           `${card.dataset.name || "Product"} front view`,
+
           "FRONT",
+
           false
+
         );
 
       }
@@ -1082,10 +770,15 @@ document.addEventListener("DOMContentLoaded", () => {
       function showBack() {
 
         changeImage(
+
           image.dataset.back,
+
           `${card.dataset.name || "Product"} back view`,
+
           "BACK",
+
           true
+
         );
 
       }
@@ -1197,18 +890,13 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
 
 
-      if (
-        !searchInput ||
-        !searchResult
-      ) {
+      if (!searchInput || !searchResult) {
         return;
       }
 
 
       const query =
-        searchInput.value
-          .trim()
-          .toLowerCase();
+        searchInput.value.trim().toLowerCase();
 
 
       if (!query) {
@@ -1222,9 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       const products =
-        document.querySelectorAll(
-          ".product-card"
-        );
+        document.querySelectorAll(".product-card");
 
 
       let found = false;
@@ -1242,6 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (name.includes(query)) {
 
           found = true;
+
 
           product.scrollIntoView({
             behavior: "smooth",
@@ -1261,13 +948,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
 
-          searchModal.classList.remove(
-            "open"
-          );
+          searchModal.classList.remove("open");
 
-          document.body.classList.remove(
-            "no-scroll"
-          );
+          document.body.classList.remove("no-scroll");
 
         }, 500);
 
@@ -1298,7 +981,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
-
       }
 
 
@@ -1309,21 +991,15 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
-
       }
 
 
       closeCartDrawer();
 
 
-      checkoutModal.classList.add(
-        "open"
-      );
+      checkoutModal.classList.add("open");
 
-
-      document.body.classList.add(
-        "no-scroll"
-      );
+      document.body.classList.add("no-scroll");
 
     }
   );
@@ -1335,20 +1011,149 @@ document.addEventListener("DOMContentLoaded", () => {
     () => {
 
       if (checkoutModal) {
-
-        checkoutModal.classList.remove(
-          "open"
-        );
-
+        checkoutModal.classList.remove("open");
       }
 
-
-      document.body.classList.remove(
-        "no-scroll"
-      );
+      document.body.classList.remove("no-scroll");
 
     }
   );
+
+
+  /* =========================================
+     UPDATE PAYMENT SCREEN
+  ========================================= */
+
+  function updatePaymentScreen() {
+
+    const productTotal =
+      cart.reduce(
+        (sum, item) =>
+          sum + (Number(item.price) || 0),
+        0
+      );
+
+
+    const totalPayNow =
+      calculateCartPaymentTotal();
+
+
+    /*
+      Product 1/2:
+      prebook is ₹99.
+
+      Product 3:
+      full amount is paid.
+    */
+
+    const totalPrebook =
+      cart.reduce(
+        (sum, item) => {
+
+          if (isProduct3(item)) {
+            return sum;
+          }
+
+          return (
+            sum +
+            (Number(item.prebook) || 99)
+          );
+
+        },
+        0
+      );
+
+
+    const totalShipping =
+      cart.reduce(
+        (sum, item) =>
+          sum + getProductShipping(item),
+        0
+      );
+
+
+    const balanceDue =
+      Math.max(
+        productTotal +
+        totalShipping -
+        totalPrebook -
+        totalPayNow +
+        totalPayNow -
+        totalPayNow,
+        0
+      );
+
+
+    if (paymentAmount) {
+
+      paymentAmount.textContent =
+        `₹${totalPayNow}`;
+
+    }
+
+
+    if (paymentProductTotal) {
+
+      paymentProductTotal.textContent =
+        `₹${productTotal}`;
+
+    }
+
+
+    if (paymentPrebookTotal) {
+
+      paymentPrebookTotal.textContent =
+        `₹${totalPayNow}`;
+
+    }
+
+
+    if (paymentBalance) {
+
+      /*
+        For Product 3 prepaid/COD,
+        there is nothing left to pay.
+
+        For Product 1/2,
+        remaining balance is product price - ₹99.
+      */
+
+      const remainingBalance =
+        cart.reduce(
+          (sum, item) => {
+
+            if (isProduct3(item)) {
+              return sum;
+            }
+
+            return (
+              sum +
+              Math.max(
+                (Number(item.price) || 0) -
+                (Number(item.prebook) || 99),
+                0
+              )
+            );
+
+          },
+          0
+        );
+
+
+      paymentBalance.textContent =
+        `₹${remainingBalance}`;
+
+    }
+
+
+    return {
+      productTotal,
+      totalPayNow,
+      totalPrebook,
+      totalShipping
+    };
+
+  }
 
 
   /* =========================================
@@ -1370,15 +1175,16 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
-
       }
 
 
       const fullName =
         get("fullName")?.value.trim() || "";
 
+
       const email =
         get("email")?.value.trim() || "";
+
 
       const address =
         get("address")?.value.trim() || "";
@@ -1395,7 +1201,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         return;
-
       }
 
 
@@ -1406,33 +1211,95 @@ document.addEventListener("DOMContentLoaded", () => {
       const orderDetails =
         cart
           .map(
-            (item, index) =>
-              `${index + 1}. ${item.name}\n   Size: ${item.size}\n   Product Price: ₹${item.price}\n   Pre-booking Amount: ₹${item.prebook}`
+            (item, index) => {
+
+              const shipping =
+                getProductShipping(item);
+
+
+              const payNow =
+                getProductPaymentAmount(item);
+
+
+              return (
+                `${index + 1}. ${item.name}\n` +
+                `   Size: ${item.size}\n` +
+                `   Product Price: ₹${item.price}\n` +
+                `   Payment Method: ${
+                  isProduct3(item)
+                    ? (
+                      item.paymentMethod === "cod"
+                        ? "COD"
+                        : "PREPAID"
+                    )
+                    : "₹99 PRE-BOOK"
+                }\n` +
+                `   Shipping: ₹${shipping}\n` +
+                `   Pay Now: ₹${payNow}`
+              );
+
+            }
           )
           .join("\n\n");
-
-
-      const totalPrebook =
-        cart.reduce(
-          (sum, item) =>
-            sum +
-            (Number(item.prebook) || 0),
-          0
-        );
 
 
       const productTotal =
         cart.reduce(
           (sum, item) =>
-            sum +
-            (Number(item.price) || 0),
+            sum + (Number(item.price) || 0),
           0
         );
 
 
-      const hasFullPaymentProduct =
-        cart.some(
-          item => item.prebook === 0
+      const totalPayNow =
+        calculateCartPaymentTotal();
+
+
+      const totalShipping =
+        cart.reduce(
+          (sum, item) =>
+            sum + getProductShipping(item),
+          0
+        );
+
+
+      const totalPrebook =
+        cart.reduce(
+          (sum, item) => {
+
+            if (isProduct3(item)) {
+              return sum;
+            }
+
+            return (
+              sum +
+              (Number(item.prebook) || 99)
+            );
+
+          },
+          0
+        );
+
+
+      const balanceDue =
+        cart.reduce(
+          (sum, item) => {
+
+            if (isProduct3(item)) {
+              return sum;
+            }
+
+            return (
+              sum +
+              Math.max(
+                (Number(item.price) || 0) -
+                (Number(item.prebook) || 99),
+                0
+              )
+            );
+
+          },
+          0
         );
 
 
@@ -1453,68 +1320,83 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       if (orderDetailsField) {
+
         orderDetailsField.value =
           orderDetails;
+
       }
 
 
       if (prebookAmountField) {
+
         prebookAmountField.value =
-          `₹${totalPrebook}`;
+          `₹${totalPayNow}`;
+
       }
 
 
       if (orderReferenceField) {
+
         orderReferenceField.value =
           orderReference;
+
       }
 
 
       if (replyTo) {
+
         replyTo.value =
           email;
+
       }
 
 
       if (emailSubject) {
+
         emailSubject.value =
-          `RED DRAGON STREETWEAR — ORDER ${orderReference}`;
+          `RED DRAGON STREETWEAR — ORDER ${orderReference} — PAYMENT VERIFICATION`;
+
       }
 
 
       if (productTotalField) {
+
         productTotalField.value =
           `₹${productTotal}`;
+
       }
 
 
       if (prebookTotalField) {
+
         prebookTotalField.value =
-          `₹${totalPrebook}`;
+          `₹${totalPayNow}`;
+
       }
 
 
       if (paymentStatusField) {
+
         paymentStatusField.value =
           "PENDING — MANUAL PAYMENT VERIFICATION";
+
+      }
+
+
+      if (verificationNoteField) {
+
+        verificationNoteField.value =
+          "Customer submitted payment information. Verify payment manually before confirming the order.";
+
       }
 
 
       /* =====================================
-         RESET PAYMENT METHOD
+         PAYMENT SCREEN
       ===================================== */
 
-      const prepaidRadio =
-        get("paymentPrepaid");
+      updatePaymentScreen();
 
-      if (prepaidRadio) {
-        prepaidRadio.checked = true;
-      }
-
-
-      /* =====================================
-         RESET PAYMENT FIELDS
-      ===================================== */
 
       if (paymentStatus) {
         paymentStatus.textContent = "";
@@ -1532,23 +1414,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       /* =====================================
-         OPEN PAYMENT
+         CLOSE CUSTOMER FORM
       ===================================== */
 
       if (checkoutModal) {
+
         checkoutModal.classList.remove("open");
+
       }
 
 
+      /* =====================================
+         OPEN PAYMENT
+      ===================================== */
+
       if (paymentModal) {
+
         paymentModal.classList.add("open");
+
       }
 
 
       document.body.classList.add("no-scroll");
 
+    }
+  );
 
-      updatePaymentMethodUI();
+
+  /* =========================================
+     CLOSE PAYMENT
+  ========================================= */
+
+  on(
+    closePayment,
+    "click",
+    () => {
+
+      if (paymentModal) {
+        paymentModal.classList.remove("open");
+      }
+
+      document.body.classList.remove("no-scroll");
 
     }
   );
@@ -1569,9 +1475,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
 
-        await navigator.clipboard.writeText(
-          upi
-        );
+        await navigator.clipboard.writeText(upi);
 
 
         copyUpi.textContent =
@@ -1584,7 +1488,6 @@ document.addEventListener("DOMContentLoaded", () => {
             "COPY UPI ID";
 
         }, 1500);
-
 
       } catch {
 
@@ -1599,7 +1502,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
-     SUBMIT UTR / COD ORDER
+     SUBMIT UTR
   ========================================= */
 
   on(
@@ -1611,31 +1514,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-
-      const paymentMethod =
-        getSelectedPaymentMethod();
-
-
-      /* =====================================
-         COD ORDER
-      ===================================== */
-
-      if (paymentMethod === "cod") {
-
-        await submitOrder({
-          utr: "COD",
-          paymentMethod: "COD",
-          shippingCharge: COD_SHIPPING_CHARGE
-        });
-
-        return;
-
-      }
-
-
-      /* =====================================
-         PREPAID ORDER
-      ===================================== */
 
       const utr =
         utrInput
@@ -1663,7 +1541,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      if (!/^[A-Za-z0-9._-]{6,40}$/.test(utr)) {
+      if (
+        !/^[A-Za-z0-9._-]{6,40}$/.test(utr)
+      ) {
 
         if (paymentStatus) {
 
@@ -1683,460 +1563,406 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      await submitOrder({
-        utr: utr,
-        paymentMethod: "PREPAID",
-        shippingCharge: PREPAID_SHIPPING_CHARGE
-      });
+      paymentSuccess.disabled = true;
 
-    }
-  );
+      paymentSuccess.textContent =
+        "SUBMITTING...";
 
-
-  /* =========================================
-     SUBMIT ORDER TO FORMSPREE
-  ========================================= */
-
-  async function submitOrder({
-    utr,
-    paymentMethod,
-    shippingCharge
-  }) {
-
-    paymentSuccess.disabled = true;
-
-    paymentSuccess.textContent =
-      "SUBMITTING...";
-
-
-    if (paymentStatus) {
-
-      paymentStatus.textContent =
-        "Submitting your order...";
-
-    }
-
-
-    try {
-
-      if (
-        !customerForm ||
-        !customerForm.action ||
-        !customerForm.action.includes(
-          "formspree.io"
-        )
-      ) {
-
-        throw new Error(
-          "Formspree endpoint is missing."
-        );
-
-      }
-
-
-      const fullName =
-        get("fullName")?.value.trim() ||
-        "Not provided";
-
-
-      const email =
-        get("email")?.value.trim() ||
-        "Not provided";
-
-
-      const phone =
-        get("phone")?.value.trim() ||
-        "Not provided";
-
-
-      const address =
-        (
-          get("address")?.value.trim() ||
-          "Not provided"
-        ).replace(/\n/g, " | ");
-
-
-      const reference =
-        orderReferenceField?.value ||
-        "Not provided";
-
-
-      /* =====================================
-         CALCULATE TOTALS
-      ===================================== */
-
-      const productTotal =
-        cart.reduce(
-          (sum, item) =>
-            sum +
-            (Number(item.price) || 0),
-          0
-        );
-
-
-      const totalPrebook =
-        cart.reduce(
-          (sum, item) =>
-            sum +
-            (Number(item.prebook) || 0),
-          0
-        );
-
-
-      const balanceDue =
-        Math.max(
-          productTotal -
-          totalPrebook,
-          0
-        );
-
-
-      const hasFullPaymentProduct =
-        cart.some(
-          item => item.prebook === 0
-        );
-
-
-      let amountPaidNow = 0;
-
-
-      if (paymentMethod === "COD") {
-
-        amountPaidNow = 0;
-
-      } else if (hasFullPaymentProduct) {
-
-        amountPaidNow =
-          productTotal +
-          shippingCharge;
-
-      } else {
-
-        amountPaidNow =
-          totalPrebook;
-
-      }
-
-
-      const finalOrderTotal =
-        paymentMethod === "COD"
-          ? productTotal + shippingCharge
-          : amountPaidNow;
-
-
-      /* =====================================
-         ORDER ITEMS
-      ===================================== */
-
-      const orderDetails =
-        cart
-          .map(
-            (item, index) => {
-
-              const isFullPayment =
-                Number(item.prebook) === 0;
-
-              return (
-                `${index + 1}. ${item.name} | Size: ${item.size} | Product Price: ₹${item.price} | ` +
-                (
-                  isFullPayment
-                    ? "FULL PAYMENT PRODUCT"
-                    : `Pre-book: ₹${item.prebook} | Balance: ₹${Math.max(item.price - item.prebook, 0)}`
-                )
-              );
-
-            }
-          )
-          .join("\n");
-
-
-      /* =====================================
-         UPDATE HIDDEN FIELDS
-      ===================================== */
-
-      if (utrTransactionId) {
-        utrTransactionId.value =
-          utr;
-      }
-
-
-      if (emailSubject) {
-
-        emailSubject.value =
-          `RED DRAGON STREETWEAR — ORDER ${reference} — ${paymentMethod}`;
-
-      }
-
-
-      if (replyTo) {
-
-        replyTo.value =
-          email !== "Not provided"
-            ? email
-            : "";
-
-      }
-
-
-      if (paymentStatusField) {
-
-        paymentStatusField.value =
-          paymentMethod === "COD"
-            ? "COD ORDER — PAYMENT ON DELIVERY"
-            : "PENDING — MANUAL PAYMENT VERIFICATION";
-
-      }
-
-
-      if (productTotalField) {
-
-        productTotalField.value =
-          `₹${productTotal}`;
-
-      }
-
-
-      if (prebookTotalField) {
-
-        prebookTotalField.value =
-          `₹${totalPrebook}`;
-
-      }
-
-
-      if (verificationNoteField) {
-
-        verificationNoteField.value =
-          paymentMethod === "COD"
-            ? `COD order. ₹${COD_SHIPPING_CHARGE} COD shipping charges applicable. Collect payment on delivery.`
-            : "UTR received. Verify the payment manually in the UPI/bank account before confirming the order.";
-
-      }
-
-
-      /* =====================================
-         CREATE CLEAN RECEIPT
-      ===================================== */
-
-      if (orderReceipt) {
-
-        orderReceipt.value = [
-
-          "=============================================",
-          "           RED DRAGON STREETWEAR",
-          "                 ORDER RECEIPT",
-          "=============================================",
-
-          `ORDER REFERENCE : ${reference}`,
-
-          `ORDER STATUS    : ${
-            paymentMethod === "COD"
-              ? "COD ORDER — PAYMENT ON DELIVERY"
-              : "PENDING MANUAL VERIFICATION"
-          }`,
-
-          "",
-
-          "CUSTOMER DETAILS",
-          "---------------------------------------------",
-
-          `Name            : ${fullName}`,
-          `Email           : ${email}`,
-          `Phone           : ${phone}`,
-          `Delivery Address: ${address}`,
-
-          "",
-
-          "ITEMS",
-          "---------------------------------------------",
-
-          orderDetails,
-
-          "",
-
-          "PAYMENT SUMMARY",
-          "---------------------------------------------",
-
-          `Product Total   : ₹${productTotal}`,
-
-          `Pre-booking Paid: ₹${totalPrebook}`,
-
-          `Balance Due     : ₹${balanceDue}`,
-
-          `Payment Method  : ${paymentMethod}`,
-
-          `Shipping Charge : ₹${shippingCharge}`,
-
-          `Amount Paid Now : ₹${amountPaidNow}`,
-
-          `Final Order Total: ₹${finalOrderTotal}`,
-
-          "",
-
-          "PAYMENT VERIFICATION",
-          "---------------------------------------------",
-
-          `UTR / Txn ID    : ${utr}`,
-
-          `Payment Status  : ${
-            paymentMethod === "COD"
-              ? "COD — PAYMENT TO BE COLLECTED ON DELIVERY"
-              : "PENDING — VERIFY MANUALLY"
-          }`,
-
-          "",
-
-          "ACTION REQUIRED",
-
-          paymentMethod === "COD"
-            ? `Dispatch COD order. Collect ₹${finalOrderTotal} from customer on delivery.`
-            : "Check the UTR against the payment received before confirming the order.",
-
-          "============================================="
-
-        ].join("\n");
-
-      }
-
-
-      /* =====================================
-         SEND FORM TO FORMSPREE
-      ===================================== */
-
-      const formData =
-        new FormData(customerForm);
-
-
-      /*
-        Add additional explicit fields.
-      */
-
-      formData.set(
-        "paymentMethod",
-        paymentMethod
-      );
-
-
-      formData.set(
-        "shippingCharge",
-        `₹${shippingCharge}`
-      );
-
-
-      formData.set(
-        "amountPaidNow",
-        `₹${amountPaidNow}`
-      );
-
-
-      formData.set(
-        "finalOrderTotal",
-        `₹${finalOrderTotal}`
-      );
-
-
-      formData.set(
-        "utrTransactionId",
-        utr
-      );
-
-
-      const response =
-        await fetch(
-          customerForm.action,
-          {
-            method: "POST",
-            body: formData,
-            headers: {
-              Accept: "application/json"
-            }
-          }
-        );
-
-
-      if (!response.ok) {
-
-        let errorMessage =
-          `Form submission failed (${response.status}).`;
-
-
-        try {
-
-          const result =
-            await response.json();
-
-
-          if (
-            result &&
-            result.errors &&
-            result.errors.length
-          ) {
-
-            errorMessage =
-              result.errors
-                .map(
-                  error =>
-                    error.message
-                )
-                .join(" ");
-
-          }
-
-        } catch {
-          // Response was not JSON.
-        }
-
-
-        throw new Error(
-          errorMessage
-        );
-
-      }
-
-
-      /* =====================================
-         SUCCESS
-      ===================================== */
 
       if (paymentStatus) {
 
         paymentStatus.textContent =
-          paymentMethod === "COD"
-            ? "COD order submitted successfully. Your order is now in progress."
-            : "UTR submitted successfully. Your order is now pending payment verification.";
+          "Submitting your payment reference...";
 
       }
 
 
-      paymentSuccess.textContent =
-        paymentMethod === "COD"
-          ? "COD ORDER SUBMITTED ✓"
-          : "UTR SUBMITTED ✓";
+      try {
 
+        if (
+          !customerForm ||
+          !customerForm.action ||
+          !customerForm.action.includes("formspree.io")
+        ) {
 
-      setTimeout(() => {
-
-        if (paymentModal) {
-
-          paymentModal.classList.remove(
-            "open"
+          throw new Error(
+            "Formspree endpoint is missing."
           );
 
         }
 
 
-        if (successModal) {
+        const fullName =
+          get("fullName")?.value.trim() ||
+          "Not provided";
 
-          successModal.classList.add(
-            "open"
+
+        const email =
+          get("email")?.value.trim() ||
+          "Not provided";
+
+
+        const phone =
+          get("phone")?.value.trim() ||
+          "Not provided";
+
+
+        const address =
+          (
+            get("address")?.value.trim() ||
+            "Not provided"
+          ).replace(/\n/g, " | ");
+
+
+        const reference =
+          orderReferenceField?.value ||
+          "Not provided";
+
+
+        const productTotal =
+          cart.reduce(
+            (sum, item) =>
+              sum +
+              (Number(item.price) || 0),
+            0
+          );
+
+
+        const totalPayNow =
+          calculateCartPaymentTotal();
+
+
+        const totalShipping =
+          cart.reduce(
+            (sum, item) =>
+              sum +
+              getProductShipping(item),
+            0
+          );
+
+
+        const balanceDue =
+          cart.reduce(
+            (sum, item) => {
+
+              if (isProduct3(item)) {
+                return sum;
+              }
+
+
+              return (
+                sum +
+                Math.max(
+                  (Number(item.price) || 0) -
+                  (Number(item.prebook) || 99),
+                  0
+                )
+              );
+
+            },
+            0
+          );
+
+
+        const orderDetails =
+          cart
+            .map(
+              (item, index) => {
+
+                const shipping =
+                  getProductShipping(item);
+
+
+                const payNow =
+                  getProductPaymentAmount(item);
+
+
+                return (
+                  `${index + 1}. ${item.name} | ` +
+                  `Size: ${item.size} | ` +
+                  `Price: ₹${item.price} | ` +
+                  `Payment: ${
+                    isProduct3(item)
+                      ? (
+                        item.paymentMethod === "cod"
+                          ? "COD"
+                          : "PREPAID"
+                      )
+                      : "₹99 PRE-BOOK"
+                  } | ` +
+                  `Shipping: ₹${shipping} | ` +
+                  `Pay Now: ₹${payNow}`
+                );
+
+              }
+            )
+            .join("\n");
+
+
+        /* =====================================
+           UTR
+        ===================================== */
+
+        if (utrTransactionId) {
+
+          utrTransactionId.value =
+            utr;
+
+        }
+
+
+        if (emailSubject) {
+
+          emailSubject.value =
+            `RED DRAGON STREETWEAR — ORDER ${reference} — UTR ${utr}`;
+
+        }
+
+
+        if (replyTo && email !== "Not provided") {
+
+          replyTo.value =
+            email;
+
+        }
+
+
+        if (paymentStatusField) {
+
+          paymentStatusField.value =
+            "PENDING — MANUAL PAYMENT VERIFICATION";
+
+        }
+
+
+        if (productTotalField) {
+
+          productTotalField.value =
+            `₹${productTotal}`;
+
+        }
+
+
+        if (prebookTotalField) {
+
+          prebookTotalField.value =
+            `₹${totalPayNow}`;
+
+        }
+
+
+        if (verificationNoteField) {
+
+          verificationNoteField.value =
+            "UTR received. Verify the payment manually in the UPI/bank account before confirming the order.";
+
+        }
+
+
+        /* =====================================
+           ORDER RECEIPT
+        ===================================== */
+
+        if (orderReceipt) {
+
+          orderReceipt.value = [
+
+            "=============================================",
+
+            "           RED DRAGON STREETWEAR",
+
+            "                 ORDER RECEIPT",
+
+            "=============================================",
+
+            `ORDER REFERENCE : ${reference}`,
+
+            `ORDER STATUS    : PENDING MANUAL VERIFICATION`,
+
+            "",
+
+            "CUSTOMER DETAILS",
+
+            "---------------------------------------------",
+
+            `Name            : ${fullName}`,
+
+            `Email           : ${email}`,
+
+            `Phone           : ${phone}`,
+
+            `Delivery Address: ${address}`,
+
+            "",
+
+            "ITEMS",
+
+            "---------------------------------------------",
+
+            orderDetails,
+
+            "",
+
+            "PAYMENT SUMMARY",
+
+            "---------------------------------------------",
+
+            `Product Total   : ₹${productTotal}`,
+
+            `Shipping Total  : ₹${totalShipping}`,
+
+            `Paid Now        : ₹${totalPayNow}`,
+
+            `Balance Due     : ₹${balanceDue}`,
+
+            "",
+
+            "PAYMENT VERIFICATION",
+
+            "---------------------------------------------",
+
+            `UTR / Txn ID    : ${utr}`,
+
+            "Payment Status  : PENDING — VERIFY MANUALLY",
+
+            "",
+
+            "ACTION REQUIRED",
+
+            "Check the UTR against the payment received before confirming the order.",
+
+            "============================================="
+
+          ].join("\n");
+
+        }
+
+
+        /* =====================================
+           SEND FORM
+        ===================================== */
+
+        const formData =
+          new FormData(customerForm);
+
+
+        const response =
+          await fetch(
+            customerForm.action,
+            {
+              method: "POST",
+
+              body: formData,
+
+              headers: {
+                Accept: "application/json"
+              }
+
+            }
+          );
+
+
+        if (!response.ok) {
+
+          let errorMessage =
+            `Form submission failed (${response.status}).`;
+
+
+          try {
+
+            const result =
+              await response.json();
+
+
+            if (
+              result &&
+              result.errors &&
+              result.errors.length
+            ) {
+
+              errorMessage =
+                result.errors
+                  .map(error => error.message)
+                  .join(" ");
+
+            }
+
+          } catch {
+            // Ignore JSON parsing errors.
+          }
+
+
+          throw new Error(
+            errorMessage
           );
 
         }
 
 
-        cart = [];
+        /* =====================================
+           SUCCESS
+        ===================================== */
 
-        updateCart();
+        if (paymentStatus) {
+
+          paymentStatus.textContent =
+            "UTR submitted successfully. Your order is now pending payment verification.";
+
+        }
+
+
+        paymentSuccess.textContent =
+          "UTR SUBMITTED ✓";
+
+
+        setTimeout(() => {
+
+          if (paymentModal) {
+
+            paymentModal.classList.remove("open");
+
+          }
+
+
+          if (successModal) {
+
+            successModal.classList.add("open");
+
+          }
+
+
+          cart = [];
+
+
+          updateCart();
+
+
+          paymentSuccess.disabled =
+            false;
+
+
+          paymentSuccess.textContent =
+            "SUBMIT UTR & PLACE ORDER";
+
+
+        }, 1000);
+
+
+      } catch (error) {
+
+        console.error(
+          "UTR submission error:",
+          error
+        );
+
+
+        if (paymentStatus) {
+
+          paymentStatus.textContent =
+            error.message ||
+            "Unable to submit your UTR. Please try again.";
+
+        }
 
 
         paymentSuccess.disabled =
@@ -2146,93 +1972,7 @@ document.addEventListener("DOMContentLoaded", () => {
         paymentSuccess.textContent =
           "SUBMIT UTR & PLACE ORDER";
 
-
-      }, 1000);
-
-
-    } catch (error) {
-
-      console.error(
-        "Order submission error:",
-        error
-      );
-
-
-      if (paymentStatus) {
-
-        paymentStatus.textContent =
-          error.message ||
-          "Unable to submit your order. Please try again.";
-
       }
-
-
-      paymentSuccess.disabled =
-        false;
-
-
-      paymentSuccess.textContent =
-        getSelectedPaymentMethod() === "cod"
-          ? "PLACE COD ORDER"
-          : "SUBMIT UTR & PLACE ORDER";
-
-    }
-
-  }
-
-
-  /* =========================================
-     CLOSE PAYMENT
-  ========================================= */
-
-  on(
-    closePayment,
-    "click",
-    () => {
-
-      if (paymentModal) {
-
-        paymentModal.classList.remove(
-          "open"
-        );
-
-      }
-
-
-      document.body.classList.remove(
-        "no-scroll"
-      );
-
-    }
-  );
-
-
-  /* =========================================
-     SUCCESS MODAL
-  ========================================= */
-
-  on(
-    closeSuccess,
-    "click",
-    () => {
-
-      if (successModal) {
-
-        successModal.classList.remove(
-          "open"
-        );
-
-      }
-
-
-      document.body.classList.remove(
-        "no-scroll"
-      );
-
-
-      scrollToSection(
-        "collection"
-      );
 
     }
   );
@@ -2262,6 +2002,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   /* =========================================
+     SUCCESS MODAL
+  ========================================= */
+
+  on(
+    closeSuccess,
+    "click",
+    () => {
+
+      if (successModal) {
+
+        successModal.classList.remove("open");
+
+      }
+
+
+      document.body.classList.remove("no-scroll");
+
+
+      scrollToSection("collection");
+
+    }
+  );
+
+
+  /* =========================================
+     NAVIGATION
+  ========================================= */
+
+  function scrollToSection(id) {
+
+    const section =
+      document.getElementById(id);
+
+
+    if (!section) {
+      return;
+    }
+
+
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+
+    try {
+
+      history.replaceState(
+        null,
+        "",
+        `#${id}`
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "Could not update URL hash.",
+        error
+      );
+
+    }
+
+  }
+
+
+  document
+    .querySelectorAll('a[href^="#"]')
+    .forEach(link => {
+
+      link.addEventListener(
+        "click",
+        event => {
+
+          const href =
+            link.getAttribute("href");
+
+
+          if (!href) {
+            return;
+          }
+
+
+          const targetId =
+            href.substring(1);
+
+
+          if (!targetId) {
+            return;
+          }
+
+
+          const target =
+            document.getElementById(targetId);
+
+
+          if (!target) {
+            return;
+          }
+
+
+          event.preventDefault();
+
+
+          scrollToSection(targetId);
+
+        }
+      );
+
+    });
+
+
+  /* =========================================
      ESCAPE KEY
   ========================================= */
 
@@ -2275,62 +2127,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       if (cartDrawer) {
-
-        cartDrawer.classList.remove(
-          "open"
-        );
-
+        cartDrawer.classList.remove("open");
       }
 
 
       if (searchModal) {
-
-        searchModal.classList.remove(
-          "open"
-        );
-
+        searchModal.classList.remove("open");
       }
 
 
       if (checkoutModal) {
-
-        checkoutModal.classList.remove(
-          "open"
-        );
-
+        checkoutModal.classList.remove("open");
       }
 
 
       if (paymentModal) {
-
-        paymentModal.classList.remove(
-          "open"
-        );
-
+        paymentModal.classList.remove("open");
       }
 
 
       if (successModal) {
-
-        successModal.classList.remove(
-          "open"
-        );
-
+        successModal.classList.remove("open");
       }
 
 
       if (overlay) {
-
-        overlay.classList.remove(
-          "active"
-        );
-
+        overlay.classList.remove("active");
       }
 
 
-      document.body.classList.remove(
-        "no-scroll"
-      );
+      document.body.classList.remove("no-scroll");
 
     }
   );
